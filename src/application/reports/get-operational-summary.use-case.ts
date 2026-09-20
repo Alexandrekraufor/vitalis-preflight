@@ -5,11 +5,24 @@ import type {
 } from "../ports/guide-repository.port";
 import type { ImportRecord, ImportRepository } from "../ports/import-repository.port";
 
+import { compareIsoDates, type IsoDate } from "@/lib/dates";
+
 import { summarizePortfolio, type PortfolioSummary } from "./portfolio-summary";
+
+/** The stretch of appointments the dashboard is actually summarising. */
+export interface Coverage {
+  readonly from: IsoDate;
+  readonly through: IsoDate;
+}
 
 export interface OperationalSummary {
   readonly summary: PortfolioSummary;
-  /** Guides that cannot be submitted, worst money first — Carla's work queue. */
+  /**
+   * Without this the screen shows a total with no period attached, and the
+   * reader cannot tell why it differs from the weekly report.
+   */
+  readonly coverage: Coverage | null;
+  /** Guides that cannot be submitted, worst money first - Carla's work queue. */
   readonly actionQueue: readonly GuideListItem[];
   readonly recentImports: readonly ImportRecord[];
 }
@@ -40,5 +53,21 @@ export async function getOperationalSummary(
     .toSorted((left, right) => right.amountAtRisk - left.amountAtRisk)
     .slice(0, ACTION_QUEUE_SIZE);
 
-  return { summary: summarizePortfolio(items), actionQueue, recentImports };
+  return { summary: summarizePortfolio(items), coverage: coverageOf(items), actionQueue, recentImports };
+}
+
+function coverageOf(items: readonly GuideListItem[]): Coverage | null {
+  const first = items.at(0);
+  if (first === undefined) return null;
+
+  return items.reduce<Coverage>(
+    (range, item) => ({
+      from: compareIsoDates(item.appointmentDate, range.from) < 0 ? item.appointmentDate : range.from,
+      through:
+        compareIsoDates(item.appointmentDate, range.through) > 0
+          ? item.appointmentDate
+          : range.through,
+    }),
+    { from: first.appointmentDate, through: first.appointmentDate },
+  );
 }

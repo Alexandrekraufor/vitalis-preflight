@@ -18,14 +18,19 @@ import type {
 } from "@/application/ports/import-repository.port";
 import { toGuideRecord } from "@/domain/guides/guide";
 import type { NormalizedGuide } from "@/domain/guides/guide.types";
-import type { NormalizationChange } from "@/domain/normalization/normalization.types";
+import type {
+  NormalizationChange,
+  RawGuideRecord,
+} from "@/domain/normalization/normalization.types";
 import type { Finding } from "@/domain/rules/finding";
+import { compareIsoDates } from "@/lib/dates";
 import { ZERO } from "@/lib/money";
 
 interface StoredVersion {
   readonly versionNumber: number;
   readonly contentHash: string;
   readonly guide: NormalizedGuide;
+  readonly raw: RawGuideRecord;
   readonly normalizations: readonly NormalizationChange[];
 }
 
@@ -46,8 +51,8 @@ function firstActionableFinding(findings: readonly Finding[]): Finding | undefin
  * In-memory stand-in for the PostgreSQL repositories.
  *
  * It exists so the API and use-case tests exercise the real handlers without a
- * database, and it deliberately reproduces the behaviour the tests depend on —
- * content-hash versioning and run history — rather than pretending to store.
+ * database, and it deliberately reproduces the behaviour the tests depend on -
+ * content-hash versioning and run history - rather than pretending to store.
  */
 export function createInMemoryGuideRepository(): GuideRepository {
   const store = new Map<string, StoredGuide>();
@@ -69,6 +74,15 @@ export function createInMemoryGuideRepository(): GuideRepository {
     if (filter.status !== undefined && run.decision !== filter.status) return false;
     if (filter.unit !== undefined && guide.unit !== filter.unit) return false;
     if (filter.conventionName !== undefined && guide.conventionName !== filter.conventionName) {
+      return false;
+    }
+    if (filter.from !== undefined && compareIsoDates(guide.appointmentDate, filter.from) < 0) {
+      return false;
+    }
+    if (
+      filter.through !== undefined &&
+      compareIsoDates(guide.appointmentDate, filter.through) > 0
+    ) {
       return false;
     }
     if (filter.search !== undefined && filter.search.trim() !== "") {
@@ -103,6 +117,7 @@ export function createInMemoryGuideRepository(): GuideRepository {
         versionNumber,
         contentHash,
         guide: input.guide,
+        raw: input.raw,
         normalizations: input.normalizations,
       };
 
@@ -154,6 +169,12 @@ export function createInMemoryGuideRepository(): GuideRepository {
 
       return Promise.resolve(
         filter.limit === undefined ? items : items.slice(0, filter.limit),
+      );
+    },
+
+    listRawRecords(): Promise<readonly RawGuideRecord[]> {
+      return Promise.resolve(
+        [...store.values()].map((stored) => stored.currentVersion.raw),
       );
     },
 

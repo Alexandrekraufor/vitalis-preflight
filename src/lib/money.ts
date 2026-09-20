@@ -1,7 +1,7 @@
 /**
  * Money is kept as an integer number of centavos. Floating point cannot
  * represent R$ 62,00 exactly, and this application compares billed amounts
- * against reference tables — a cent of drift would be a phantom finding.
+ * against reference tables - a cent of drift would be a phantom finding.
  */
 declare const moneyBrand: unique symbol;
 
@@ -46,7 +46,19 @@ export function toDecimalString(value: Money): string {
   return `${sign}${Math.trunc(absolute / 100)}.${String(absolute % 100).padStart(2, "0")}`;
 }
 
-/** `6200` -> `"R$ 62,00"`. */
+/**
+ * `6200` -> `"R$ 62,00"`, `138100` -> `"R$ 1.381,00"`.
+ *
+ * Grouping is done on the digits of the integer amount rather than through a
+ * `Number`, so a large total is never routed through floating point just to be
+ * printed. Without the thousands separator a reader has to count digits to
+ * know whether they are looking at hundreds or thousands.
+ */
 export function formatBrl(value: Money): string {
-  return `R$ ${toDecimalString(value).replace(".", ",")}`;
+  const decimal = toDecimalString(value);
+  const negative = decimal.startsWith("-");
+  const [whole = "0", cents = "00"] = (negative ? decimal.slice(1) : decimal).split(".");
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  return `${negative ? "-" : ""}R$ ${grouped},${cents}`;
 }

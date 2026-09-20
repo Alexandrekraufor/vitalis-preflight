@@ -40,7 +40,7 @@ export interface GuideListItem {
   readonly amount: Money | null;
   readonly status: GuideStatus;
   readonly amountAtRisk: Money;
-  /** The finding that best explains the decision — the first non-informational one. */
+  /** The finding that best explains the decision - the first non-informational one. */
   readonly primaryFindingCode: string | null;
   readonly primaryFindingMessage: string | null;
   readonly validatedAt: Date;
@@ -52,6 +52,13 @@ export interface GuideListFilter {
   readonly conventionName?: string;
   /** Matches the guide id or the patient code. */
   readonly search?: string;
+  /**
+   * Appointment-date window, inclusive on both ends. It is the same cut the
+   * weekly report makes, so a link from the report lands on exactly the guides
+   * the report counted.
+   */
+  readonly from?: IsoDate;
+  readonly through?: IsoDate;
   readonly limit?: number;
 }
 
@@ -86,12 +93,14 @@ export interface GuideExportRow {
 
 /**
  * Persistence boundary for guides and their validation history. They are one
- * aggregate — a decision only means anything next to the version of the data it
- * was made on — so they share a repository instead of being split by table.
+ * aggregate - a decision only means anything next to the version of the data it
+ * was made on - so they share a repository instead of being split by table.
  */
 export interface GuideRepository {
   save(input: PersistGuideInput): Promise<PersistGuideOutcome>;
   list(filter: GuideListFilter): Promise<readonly GuideListItem[]>;
   findDetail(idGuia: string): Promise<GuideDetail | null>;
   listForExport(filter: GuideListFilter): Promise<readonly GuideExportRow[]>;
+  /** The payloads exactly as they arrived, for replaying the engine over them. */
+  listRawRecords(): Promise<readonly RawGuideRecord[]>;
 }

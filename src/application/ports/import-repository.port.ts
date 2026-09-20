@@ -1,4 +1,6 @@
-export type ImportSource = "CSV" | "API" | "SEED";
+export type ImportSource = "CSV" | "API" | "SEED" | "REVALIDATION";
+
+export const IMPORT_SOURCES = ["CSV", "API", "SEED", "REVALIDATION"] as const;
 
 export interface StartImportInput {
   readonly source: ImportSource;

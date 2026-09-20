@@ -8,7 +8,8 @@ import { GuideFields } from "@/components/guides/guide-fields";
 import { NormalizationsList } from "@/components/guides/normalizations-list";
 import { ValidationHistory } from "@/components/guides/validation-history";
 import { WhyItFell } from "@/components/guides/why-it-fell";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageContent } from "@/components/layout/page-content";
+import { PageHeader } from "@/components/layout/page-header";
 import { explainDecision, recommendedActions } from "@/domain/guides/validation-result";
 import { requireUser } from "@/infrastructure/auth/guards";
 import { appServices } from "@/infrastructure/composition-root";
@@ -51,19 +52,21 @@ export default async function GuideDetailPage({
         }
       />
 
-      <DecisionPanel run={latestRun} recommendedActions={recommendedActions(findings)} />
+      <PageContent>
+        <DecisionPanel run={latestRun} recommendedActions={recommendedActions(findings)} />
 
-      <WhyItFell reasons={explainDecision(findings)} />
+        <WhyItFell reasons={explainDecision(findings)} />
 
-      <FindingsList findings={findings} />
+        <FindingsList findings={findings} />
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <GuideFields guide={guide} />
-        <div className="flex flex-col gap-4">
-          <NormalizationsList changes={normalizations} />
-          <ValidationHistory runs={history} />
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <GuideFields guide={guide} />
+          <div className="flex flex-col gap-4">
+            <NormalizationsList changes={normalizations} />
+            <ValidationHistory runs={history} />
+          </div>
         </div>
-      </div>
+      </PageContent>
     </>
   );
 }

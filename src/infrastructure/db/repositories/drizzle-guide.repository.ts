@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
-import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm";
 
 import type {
   GuideDetail,
@@ -17,6 +17,7 @@ import type {
 import { parseGuide, toGuideRecord } from "@/domain/guides/guide";
 import type {
   NormalizationChange,
+  RawGuideRecord,
   NormalizedGuideRecord,
 } from "@/domain/normalization/normalization.types";
 import type { Finding } from "@/domain/rules/finding";
@@ -180,6 +181,8 @@ export function createDrizzleGuideRepository(database: Database): GuideRepositor
         filter.conventionName === undefined
           ? undefined
           : eq(guides.conventionName, filter.conventionName),
+        filter.from === undefined ? undefined : gte(guides.appointmentDate, filter.from),
+        filter.through === undefined ? undefined : lte(guides.appointmentDate, filter.through),
         filter.search === undefined || filter.search.trim() === ""
           ? undefined
           : or(
@@ -268,6 +271,16 @@ export function createDrizzleGuideRepository(database: Database): GuideRepositor
         findings,
         history,
       };
+    },
+
+    async listRawRecords(): Promise<readonly RawGuideRecord[]> {
+      const rows = await database
+        .select({ raw: guideVersions.rawPayload })
+        .from(guides)
+        .innerJoin(guideVersions, eq(guides.currentVersionId, guideVersions.id))
+        .orderBy(guides.idGuia);
+
+      return rows.map((row) => row.raw);
     },
 
     async listForExport(filter: GuideListFilter): Promise<readonly GuideExportRow[]> {

@@ -1,7 +1,7 @@
 /**
  * Calendar dates without time or timezone. The domain only ever reasons about
  * days ("the authorization is valid through the 24th"), so carrying a Date
- * object — and its timezone — would add ambiguity rather than precision.
+ * object - and its timezone - would add ambiguity rather than precision.
  */
 declare const isoDateBrand: unique symbol;
 

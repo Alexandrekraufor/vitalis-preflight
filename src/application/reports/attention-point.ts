@@ -18,7 +18,7 @@ function percent(value: number): string {
 }
 
 /**
- * The one sentence the owner should read first — or nothing.
+ * The one sentence the owner should read first - or nothing.
  *
  * This deliberately returns `null` rather than manufacturing an insight. With
  * four problems spread over three units, "Norte concentra 50%" is arithmetic

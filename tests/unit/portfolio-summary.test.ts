@@ -15,6 +15,7 @@ interface ItemOverrides {
   readonly unit: ClinicUnit;
   readonly amountCents: number;
   readonly primaryFindingCode?: string;
+  readonly convention?: string;
 }
 
 function anItem(id: string, overrides: ItemOverrides): GuideListItem {
@@ -26,7 +27,7 @@ function anItem(id: string, overrides: ItemOverrides): GuideListItem {
   return {
     idGuia: id,
     unit: overrides.unit,
-    conventionName: "Vitalcard",
+    conventionName: overrides.convention ?? "Vitalcard",
     patient: "P-1",
     procedureCode: "50000470",
     procedureDescription: null,
@@ -42,7 +43,12 @@ function anItem(id: string, overrides: ItemOverrides): GuideListItem {
 
 const PORTFOLIO: readonly GuideListItem[] = [
   anItem("G-1", { status: "READY_TO_SUBMIT", unit: "Centro", amountCents: 6200 }),
-  anItem("G-2", { status: "READY_TO_SUBMIT", unit: "Norte", amountCents: 7000 }),
+  anItem("G-2", {
+    status: "READY_TO_SUBMIT",
+    unit: "Norte",
+    amountCents: 7000,
+    convention: "Plano Bem",
+  }),
   anItem("G-3", {
     status: "NEEDS_CORRECTION",
     unit: "Centro",
@@ -60,6 +66,7 @@ const PORTFOLIO: readonly GuideListItem[] = [
     unit: "Sul",
     amountCents: 14000,
     primaryFindingCode: "PROCEDURE_CONTRADICTED_BY_NOTE",
+    convention: "Plano Bem",
   }),
 ];
 
@@ -73,11 +80,54 @@ describe("summarizePortfolio", () => {
     });
   });
 
-  it("separates money at risk from money protected", () => {
+  it("separates money at risk from money protected, and totals the period", () => {
     const summary = summarizePortfolio(PORTFOLIO);
 
     expect(summary.amountAtRisk).toBe(6200 + 9000 + 14000);
     expect(summary.amountProtected).toBe(6200 + 7000);
+    expect(summary.amountBilled).toBe(6200 + 7000 + 6200 + 9000 + 14000);
+  });
+
+  it("ranks conventions by volume, with what each one bills and risks", () => {
+    const summary = summarizePortfolio(PORTFOLIO);
+
+    expect(summary.byConvention).toEqual([
+      {
+        convention: "Vitalcard",
+        total: 3,
+        readyToSubmit: 1,
+        needsCorrection: 2,
+        reviewRequired: 0,
+        amountAtRisk: 6200 + 9000,
+        amountBilled: 6200 + 6200 + 9000,
+      },
+      {
+        convention: "Plano Bem",
+        total: 2,
+        readyToSubmit: 1,
+        needsCorrection: 0,
+        reviewRequired: 1,
+        amountAtRisk: 14000,
+        amountBilled: 7000 + 14000,
+      },
+    ]);
+  });
+
+  it("names the convention that dominates each unit", () => {
+    const byUnit = summarizePortfolio(PORTFOLIO).byUnit;
+
+    expect(byUnit.map((unit) => [unit.unit, unit.topConvention?.convention])).toEqual([
+      ["Centro", "Vitalcard"],
+      ["Norte", "Plano Bem"],
+      ["Sul", "Plano Bem"],
+    ]);
+    // Sul has one guide from each: the tie breaks alphabetically, and the
+    // share says plainly that this is half the unit, not a landslide.
+    expect(byUnit.at(2)?.topConvention).toEqual({
+      convention: "Plano Bem",
+      guides: 1,
+      share: 0.5,
+    });
   });
 
   it("ranks problems by how many guides they block, with a readable label", () => {

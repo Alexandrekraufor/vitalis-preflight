@@ -56,6 +56,10 @@ describe("money", () => {
     expect(toDecimalString(fromCents(6200))).toBe("62.00");
     expect(toDecimalString(fromCents(5))).toBe("0.05");
     expect(formatBrl(fromCents(14000))).toBe("R$ 140,00");
+    // Without grouping a reader has to count digits to tell 1.381 from 138.100.
+    expect(formatBrl(fromCents(138100))).toBe("R$ 1.381,00");
+    expect(formatBrl(fromCents(1234567890))).toBe("R$ 12.345.678,90");
+    expect(formatBrl(fromCents(-250050))).toBe("-R$ 2.500,50");
   });
 
   it("sums without floating point drift", () => {
