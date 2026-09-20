@@ -43,3 +43,6 @@ next-env.d.ts
 
 # vitest
 /coverage
+
+# ferramenta de desenvolvimento, nao faz parte do produto
+.claude/
