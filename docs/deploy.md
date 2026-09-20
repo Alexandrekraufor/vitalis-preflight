@@ -48,10 +48,10 @@ host e não é alcançável nem pelas outras stacks da VPS.
 O Swarm não constrói imagem, ele puxa. Duas imagens, da sua máquina:
 
 ```bash
-docker build -t usuario-do-docker-hub/vitalis-preflight:v1 -f Dockerfile .
-docker build -t usuario-do-docker-hub/vitalis-preflight-migrate:v1 -f Dockerfile.migrate .
-docker push usuario-do-docker-hub/vitalis-preflight:v1
-docker push usuario-do-docker-hub/vitalis-preflight-migrate:v1
+docker build -t kraufort/vitalis-preflight:v1 -f Dockerfile .
+docker build -t kraufort/vitalis-preflight-migrate:v1 -f Dockerfile.migrate .
+docker push kraufort/vitalis-preflight:v1
+docker push kraufort/vitalis-preflight-migrate:v1
 ```
 
 ## 2. Criar o volume, na VPS
@@ -81,7 +81,7 @@ Antes de dar deploy, troque no próprio editor:
 | Onde está | Troque por |
 | --- | --- |
 | `senha-do-postgres` | a senha do banco, nos três lugares em que aparece |
-| `usuario-do-docker-hub` | seu usuário do registry, nas duas imagens |
+| `kraufort` | seu usuário do registry, nas duas imagens |
 
 As linhas que terminam em `=` são opcionais: cole o valor na frente do sinal de
 igual ou deixe em branco. Em branco significa não configurado, e a stack sobe
@@ -105,7 +105,7 @@ na imagem de migrations.
 docker run --rm -it \
   --network vitalis_internal \
   -e DATABASE_URL=postgres://vitalis:senha-do-postgres@vitalis-postgres:5432/vitalis_preflight \
-  usuario-do-docker-hub/vitalis-preflight-migrate:v1 \
+  kraufort/vitalis-preflight-migrate:v1 \
   pnpm exec tsx --conditions=react-server scripts/bootstrap-admin.mts
 ```
 
@@ -126,7 +126,7 @@ docker run --rm \
   -e DATABASE_URL=postgres://vitalis:senha-do-postgres@vitalis-postgres:5432/vitalis_preflight \
   -e EVALUATOR_EMAIL=email-do-avaliador \
   -e EVALUATOR_PASSWORD=senha-do-avaliador \
-  usuario-do-docker-hub/vitalis-preflight-migrate:v1 \
+  kraufort/vitalis-preflight-migrate:v1 \
   pnpm exec tsx --conditions=react-server scripts/provision-evaluator.mts
 ```
 
@@ -141,7 +141,7 @@ atualiza a senha e rotaciona as chaves, sem duplicar nada.
 docker service logs -f vitalis_vitalis-app
 
 # atualizar depois de um build e push novos
-docker service update --image usuario-do-docker-hub/vitalis-preflight:v2 vitalis_vitalis-app
+docker service update --image kraufort/vitalis-preflight:v2 vitalis_vitalis-app
 
 # backup do banco
 docker exec $(docker ps -q -f name=vitalis_vitalis-postgres) \
