@@ -15,8 +15,8 @@ const TEST_PASSWORD = "senha-de-teste-123";
 /**
  * Creates an active member and opens a real session for them.
  *
- * The cookie handed back is the genuine article — the same opaque token the
- * login action would set — so authorization tests exercise the real lookup
+ * The cookie handed back is the genuine article - the same opaque token the
+ * login action would set - so authorization tests exercise the real lookup
  * path rather than a stubbed user.
  */
 export async function signIn(

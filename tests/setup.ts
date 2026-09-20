@@ -6,7 +6,7 @@ import { resetRateLimits } from "@/lib/rate-limit";
  * Environment for the test process.
  *
  * These are fixtures, not credentials: they never leave this file, and the
- * database URL points at a host the suite never connects to — every test runs
+ * database URL points at a host the suite never connects to - every test runs
  * against in-memory repositories.
  */
 // `NODE_ENV` is typed read-only by @types/node; Vitest already sets it to

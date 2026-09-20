@@ -164,7 +164,7 @@ describe("administrator actions authorize on the server", () => {
       inviteForm("novo@vitalis.test"),
     );
 
-    // Tests run outside production, so the link is present by design — the
+    // Tests run outside production, so the link is present by design - the
     // production path is covered where the use case is tested directly.
     expect(typeof state.inviteUrl).toBe("string");
     expect(state.inviteUrl).not.toContain(admin.token);

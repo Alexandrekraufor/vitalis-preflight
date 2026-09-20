@@ -6,6 +6,9 @@ import {
   createRecordingMailer,
   type RecordingMailer,
 } from "./in-memory-access";
+import { createInMemoryOAuthRepository } from "./in-memory-oauth";
+import { createInMemoryRuleSetRepository } from "./in-memory-rule-sets";
+import { createInMemoryApiUsageRepository } from "./in-memory-usage";
 import {
   createInMemoryGuideRepository,
   createInMemoryImportRepository,
@@ -15,7 +18,7 @@ import { testRuleSet } from "./rule-set";
 /**
  * A fully wired application with in-memory storage. API route tests point the
  * composition root at this, so they exercise the real handlers, the real use
- * cases and the real rules — only the database is substituted.
+ * cases and the real rules - only the database is substituted.
  */
 export interface TestServices extends AppServices {
   readonly mailer: RecordingMailer;
@@ -28,6 +31,9 @@ export function createTestServices(): TestServices {
     guides: createInMemoryGuideRepository(),
     imports: createInMemoryImportRepository(),
     access: createInMemoryAccessRepository(),
+    oauth: createInMemoryOAuthRepository(),
+    usage: createInMemoryApiUsageRepository(),
+    rules: createInMemoryRuleSetRepository(),
     mailer: createRecordingMailer(),
   };
 }
