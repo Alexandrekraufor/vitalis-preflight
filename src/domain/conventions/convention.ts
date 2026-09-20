@@ -2,7 +2,7 @@ import type { Convention, Procedure, RuleSet } from "./convention.types";
 
 /**
  * Conventions are written by humans ("Saúde Interior", "SAUDE INTERIOR"), so
- * lookups are accent- and case-insensitive. This normalizes the *key only* —
+ * lookups are accent- and case-insensitive. This normalizes the *key only* -
  * the guide keeps whatever the receptionist typed.
  */
 export function conventionKey(name: string): string {

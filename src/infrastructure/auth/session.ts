@@ -23,7 +23,7 @@ export const sessionTokens: SessionTokenFactory = {
  *
  * `httpOnly` keeps the token away from any script on the page, which is what
  * makes an XSS bug a defacement rather than a session theft. `sameSite: lax`
- * blocks cross-site POSTs — the CSRF defence for every form in the app — while
+ * blocks cross-site POSTs - the CSRF defence for every form in the app - while
  * still letting a member follow a link into the dashboard. `secure` is on
  * whenever the app is not served over plain local HTTP.
  */
@@ -57,7 +57,7 @@ export async function readSessionToken(): Promise<string | null> {
  * Used from route handlers, which do have the `Request`.
  *
  * Reading the header directly keeps handlers independent of Next's async
- * request storage — which is also what lets the authorization tests drive the
+ * request storage - which is also what lets the authorization tests drive the
  * real handlers with a real cookie instead of a mocked module.
  */
 export function readSessionTokenFromRequest(request: Request): string | null {

@@ -41,8 +41,8 @@ export interface InvitationCreated {
  * Creates a single-use invitation and hands the link to the mailer.
  *
  * The raw token exists only in memory and in the outgoing message; the
- * database stores its digest, so nobody — including an administrator reading
- * the table — can recover a pending link.
+ * database stores its digest, so nobody - including an administrator reading
+ * the table - can recover a pending link.
  */
 export async function inviteMember(
   input: InviteMemberInput,

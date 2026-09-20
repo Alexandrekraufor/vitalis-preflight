@@ -18,7 +18,7 @@ interface Pattern {
  * reproducible, and the model-backed interpreter needs a fallback.
  *
  * Patterns are intentionally narrow. A note this does not recognize produces no
- * facts at all — silence is correct, invention is not.
+ * facts at all - silence is correct, invention is not.
  */
 const PATTERNS: readonly Pattern[] = [
   {

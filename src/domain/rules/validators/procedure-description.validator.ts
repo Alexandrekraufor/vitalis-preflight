@@ -13,7 +13,7 @@ function comparable(value: string): string {
 /**
  * The code is authoritative; the description is what a human will read on the
  * guide. When they disagree, one of the two is wrong and only a person knows
- * which — so this never rewrites the description.
+ * which - so this never rewrites the description.
  */
 export const validateProcedureDescription: Validator = ({ guide, procedure }) => {
   if (procedure === null) return [];

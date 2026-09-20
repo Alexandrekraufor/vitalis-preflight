@@ -10,7 +10,7 @@ export function generateToken(): string {
 /**
  * Tokens are stored as their SHA-256 digest.
  *
- * The token itself is high-entropy random, so a plain digest is enough — there
+ * The token itself is high-entropy random, so a plain digest is enough - there
  * is nothing to brute-force the way there is with a password, and a stretching
  * KDF would only slow every request down.
  */

@@ -5,7 +5,7 @@ export const INVITATION_LIFETIME_DAYS = 7;
 
 /**
  * Why an invitation cannot be used. Every reason is reported to the visitor as
- * a distinct, human-readable outcome — but never in a way that reveals whether
+ * a distinct, human-readable outcome - but never in a way that reveals whether
  * a *different* token would have worked.
  */
 export type InvitationRejection =

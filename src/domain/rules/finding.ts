@@ -12,7 +12,7 @@ import type { FindingCode } from "./finding-codes";
  */
 export type FindingSeverity = "BLOCKING" | "REVIEW" | "INFO";
 
-/** Where the finding came from — the audit trail depends on this being honest. */
+/** Where the finding came from - the audit trail depends on this being honest. */
 export type FindingSource =
   | "CONVENTION_RULE"
   | "REFERENCE_TABLE"

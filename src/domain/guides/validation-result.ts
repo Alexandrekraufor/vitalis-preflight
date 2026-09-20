@@ -119,7 +119,7 @@ export interface ObservationAudit {
   readonly interpretation: ObservationInterpretation;
 }
 
-/** Everything a single preflight produced — the unit persisted and displayed. */
+/** Everything a single preflight produced - the unit persisted and displayed. */
 export interface ValidationResult {
   readonly guide: NormalizedGuide;
   readonly decision: GuideDecision;

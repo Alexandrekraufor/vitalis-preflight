@@ -77,7 +77,7 @@ function isBlankRow(row: readonly string[]): boolean {
 }
 
 /**
- * Turns an upload into raw records. It checks the shape of the file only —
+ * Turns an upload into raw records. It checks the shape of the file only -
  * values are handed to the normalizer and the rule engine untouched, so a CSV
  * import and an API call converge on exactly the same code path.
  */

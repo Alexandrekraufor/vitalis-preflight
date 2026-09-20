@@ -57,8 +57,8 @@ const unit = z.string().transform((value, ctx) => {
 
 /**
  * Structural contract of a normalized guide record. It rejects data that cannot
- * be reasoned about at all; everything that is merely *wrong* — an unknown
- * convention, a missing CID, an expired authorization — is left to the rule
+ * be reasoned about at all; everything that is merely *wrong* - an unknown
+ * convention, a missing CID, an expired authorization - is left to the rule
  * engine so the caller gets a finding instead of a parse error.
  */
 const normalizedGuideSchema = z
@@ -140,7 +140,7 @@ export function parseGuide(
 /**
  * Inverse of `parseGuide`: renders a typed guide back into the 18-column record
  * the clinic works with. Used for content hashing, CSV export and anywhere the
- * original column names have to be spoken — so that mapping exists exactly once.
+ * original column names have to be spoken - so that mapping exists exactly once.
  */
 export function toGuideRecord(guide: NormalizedGuide): NormalizedGuideRecord {
   return {

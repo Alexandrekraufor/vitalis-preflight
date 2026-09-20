@@ -8,7 +8,7 @@ import { hash, verify } from "@node-rs/argon2";
  * argon2id with the parameters OWASP recommends for interactive logins
  * (19 MiB of memory, 2 iterations, 1 lane). The salt is generated per hash by
  * the library and embedded in the encoded digest, so there is no salt handling
- * — and no opportunity to get it wrong — in this codebase.
+ * - and no opportunity to get it wrong - in this codebase.
  *
  * `algorithm` is left at the library default, which is argon2id. The default is
  * not taken on trust: a unit test asserts the produced digest carries the
@@ -46,7 +46,7 @@ export async function verifyPassword(
  * Digest of a value nobody knows, computed once per process.
  *
  * Generated rather than hard-coded so it is guaranteed to be a well-formed
- * argon2 digest — a malformed constant would fail to parse and return early,
+ * argon2 digest - a malformed constant would fail to parse and return early,
  * which is exactly the timing difference this is meant to remove.
  */
 let dummyDigest: Promise<string> | undefined;

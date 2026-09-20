@@ -17,7 +17,7 @@ import {
  * A stored guide as the detail screen, `GET /api/v1/guides/{id}` and the MCP
  * `consultar_guia` tool publish it.
  *
- * Everything here is read back from the database — the decision, its summary
+ * Everything here is read back from the database - the decision, its summary
  * and the rule stamp are the ones recorded at validation time, not recomputed.
  * That is what makes an old decision still explainable after the rules change.
  */

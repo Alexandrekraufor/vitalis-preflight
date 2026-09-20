@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * The closed set of situations the interpreter may report. A model can only
- * recognize one of these — it can never introduce a new kind of problem, and it
+ * recognize one of these - it can never introduce a new kind of problem, and it
  * never decides anything: the reconciliation step turns facts into findings.
  */
 export const OBSERVATION_FACT_TYPES = [

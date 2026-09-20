@@ -22,7 +22,7 @@ export const GUIDE_COLUMNS = [
 
 export type GuideColumn = (typeof GUIDE_COLUMNS)[number];
 
-/** Whatever arrived — from a CSV cell, a JSON body or an MCP tool argument. */
+/** Whatever arrived - from a CSV cell, a JSON body or an MCP tool argument. */
 export type RawGuideRecord = Readonly<Partial<Record<GuideColumn, unknown>>>;
 
 /** Same shape, after syntactic clean-up. Every value is a string or absent. */

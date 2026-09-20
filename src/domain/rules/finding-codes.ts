@@ -2,7 +2,7 @@ import type { RequiredFieldName } from "@/domain/conventions/convention.types";
 
 /**
  * Stable identifiers for every problem the preflight can report. They are part
- * of the public contract (REST, MCP, exported CSV) — rename a code and every
+ * of the public contract (REST, MCP, exported CSV) - rename a code and every
  * downstream consumer breaks, so codes are append-only.
  */
 export const FINDING_CODES = [

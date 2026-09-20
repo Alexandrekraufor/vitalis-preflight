@@ -43,7 +43,7 @@ export function buildRuleContext(
  *
  * Deterministic rules run first and on their own; the note interpretation is
  * reconciled against them afterwards. The model therefore never sees a chance
- * to weaken a rule — it can only add context the rules could not see.
+ * to weaken a rule - it can only add context the rules could not see.
  */
 export function runRuleEngine({
   guide,

@@ -27,7 +27,7 @@ export type TeamChangeFailure =
  * Guard shared by every destructive change to a member.
  *
  * Two invariants: an administrator cannot lock themselves out by editing their
- * own row, and the last active administrator cannot be removed or demoted —
+ * own row, and the last active administrator cannot be removed or demoted -
  * otherwise the team would need a database console to recover.
  */
 async function assertChangeAllowed(

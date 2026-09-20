@@ -20,7 +20,7 @@ import type {
 
 import { clinicUnitEnum, importSourceEnum } from "./enums";
 
-/** One upload, API batch or seed run — the provenance of a set of versions. */
+/** One upload, API batch or seed run - the provenance of a set of versions. */
 export const sourceImports = pgTable("source_imports", {
   id: uuid("id").primaryKey().defaultRandom(),
   source: importSourceEnum("source").notNull(),

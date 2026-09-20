@@ -10,7 +10,7 @@ import type {
  *
  * This adapter refuses to run in production. Printing a single-use credential
  * to a log is acceptable on a developer's own machine and nowhere else, so the
- * failure is loud rather than silent — a deployment without a real mailer
+ * failure is loud rather than silent - a deployment without a real mailer
  * configured should not quietly leak tokens into its logs.
  */
 export function createConsoleInvitationMailer(isProduction: boolean): InvitationMailer {

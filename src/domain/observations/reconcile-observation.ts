@@ -7,7 +7,7 @@ const VERBAL_AUTHORIZATION_CONVENTIONS_NOTE_HINT = /autoriza[çc][ãa]o verbal/i
 
 /**
  * Turns interpreter facts into findings. This is where a fact meets the
- * convention's own text and the guide's structured data — the model reports
+ * convention's own text and the guide's structured data - the model reports
  * what the note says, this function decides what that means, using only rules
  * that actually exist.
  */

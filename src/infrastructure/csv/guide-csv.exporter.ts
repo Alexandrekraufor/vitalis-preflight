@@ -6,7 +6,7 @@ import { toDecimalString } from "@/lib/money";
 /**
  * Characters that make a spreadsheet treat a cell as a formula rather than as
  * text. A reception note beginning with `=` is data, but Excel and Sheets will
- * happily evaluate it — and `=HYPERLINK`, `=WEBSERVICE` or a DDE payload turns
+ * happily evaluate it - and `=HYPERLINK`, `=WEBSERVICE` or a DDE payload turns
  * an exported worklist into an exfiltration channel.
  */
 const FORMULA_TRIGGERS = /^[=+\-@\t\r]/;

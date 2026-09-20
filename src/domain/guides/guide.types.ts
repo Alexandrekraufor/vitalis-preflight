@@ -12,8 +12,8 @@ export type ClinicUnit = (typeof CLINIC_UNITS)[number];
  * Fields the clinic's own export can legitimately leave empty are nullable
  * here: whether an empty CID is a problem depends on the convention, and that
  * is a rule-engine decision, not a parsing one. Only what is meaningless when
- * absent — the identifier, the unit, the appointment date, the convention and
- * the procedure code — is required.
+ * absent - the identifier, the unit, the appointment date, the convention and
+ * the procedure code - is required.
  */
 export interface NormalizedGuide {
   readonly idGuia: string;

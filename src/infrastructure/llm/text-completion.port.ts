@@ -8,7 +8,7 @@ export interface TextCompletionRequest {
  * The only thing the application asks of a language model: text in, text out.
  *
  * Keeping the port this small is what stops a provider from leaking into the
- * domain — swapping vendors is implementing one method.
+ * domain - swapping vendors is implementing one method.
  */
 export interface TextCompletionClient {
   readonly model: string;
