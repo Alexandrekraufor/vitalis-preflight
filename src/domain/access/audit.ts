@@ -14,6 +14,13 @@ export const AUDIT_ACTIONS = [
   "INVITATION_ACCEPTED",
   "GUIDES_IMPORTED",
   "GUIDE_VALIDATION_REQUESTED",
+  "API_CREDENTIAL_ISSUED",
+  "API_CREDENTIAL_REVOKED",
+  "MCP_ACCESS_GRANTED",
+  "MCP_ACCESS_REVOKED",
+  "RULE_DRAFT_SAVED",
+  "RULE_SET_PUBLISHED",
+  "GUIDES_REVALIDATED",
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -30,7 +37,7 @@ export interface AuditEntry {
   readonly subject: string | null;
   /**
    * Identifiers and outcomes only. Never a token, a password, a session value
-   * or an authorization header — see `docs/security.md`.
+   * or an authorization header - see `docs/security.md`.
    */
   readonly metadata: Record<string, string | number | boolean> | null;
 }
@@ -53,6 +60,13 @@ const LABELS: Readonly<Record<AuditAction, string>> = {
   INVITATION_ACCEPTED: "Convite aceito",
   GUIDES_IMPORTED: "Importação executada",
   GUIDE_VALIDATION_REQUESTED: "Validação solicitada",
+  API_CREDENTIAL_ISSUED: "Chave de API criada",
+  API_CREDENTIAL_REVOKED: "Chave de API revogada",
+  MCP_ACCESS_GRANTED: "Acesso MCP autorizado",
+  MCP_ACCESS_REVOKED: "Acesso MCP revogado",
+  RULE_DRAFT_SAVED: "Rascunho de regras salvo",
+  RULE_SET_PUBLISHED: "Regras publicadas",
+  GUIDES_REVALIDATED: "Guias reavaliadas",
 };
 
 export function auditActionLabel(action: AuditAction): string {

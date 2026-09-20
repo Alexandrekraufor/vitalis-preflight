@@ -23,14 +23,14 @@ export interface Convention {
   readonly requiredFields: readonly RequiredFieldName[];
   /**
    * Maximum lifespan of an authorization, counted from its issue date.
-   * Not enforceable today — see `docs/assumptions.md`.
+   * Not enforceable today - see `docs/assumptions.md`.
    */
   readonly maxAuthorizationValidityDays: number;
   readonly maxSessionsPerAuthorization: number;
   readonly coveredProcedureCodes: readonly string[];
   /**
    * Maximum delay between the appointment and the submission to the convention.
-   * Not enforceable today — see `docs/assumptions.md`.
+   * Not enforceable today - see `docs/assumptions.md`.
    */
   readonly submissionDeadlineDays: number;
   /** Verbatim rule text, surfaced to humans and agents without reinterpretation. */
