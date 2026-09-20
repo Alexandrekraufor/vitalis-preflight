@@ -1,0 +1,16 @@
+# Applies pending migrations and exits. Kept apart from the application image so
+# the running server never carries the tooling that can rewrite the schema.
+FROM node:22-alpine
+RUN corepack enable
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY drizzle ./drizzle
+COPY scripts ./scripts
+COPY src ./src
+COPY data ./data
+COPY tsconfig.json drizzle.config.ts ./
+
+CMD ["pnpm", "exec", "tsx", "scripts/migrate.mts"]
