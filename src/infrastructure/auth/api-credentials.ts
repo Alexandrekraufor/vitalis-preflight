@@ -1,14 +1,24 @@
 import "server-only";
 
+import type { AccessRepository } from "@/application/ports/access-repository.port";
+import { allowsScope, type ApiScope, type ApiSurface } from "@/domain/access/api-credential";
 import { env } from "@/lib/env";
 
-import { secretsMatch } from "./tokens";
+import { hashToken, secretsMatch } from "./tokens";
 
-export type ApiSurface = "REST" | "MCP";
+export type { ApiScope, ApiSurface };
 
 export type ApiAuthOutcome =
-  | { readonly ok: true; readonly mode: "CREDENTIAL" | "DEMO" }
-  | { readonly ok: false; readonly reason: "MISSING" | "INVALID" | "NOT_CONFIGURED" };
+  | {
+      readonly ok: true;
+      readonly mode: "CREDENTIAL" | "DEMO";
+      /** Set when the credential came from the database, so its use can be stamped. */
+      readonly credentialId: string | null;
+    }
+  | {
+      readonly ok: false;
+      readonly reason: "MISSING" | "INVALID" | "NOT_CONFIGURED" | "INSUFFICIENT_SCOPE";
+    };
 
 function bearerToken(request: Request): string | null {
   const header = request.headers.get("authorization");
@@ -18,31 +28,55 @@ function bearerToken(request: Request): string | null {
   return match?.[1]?.trim() ?? null;
 }
 
-function expectedKeyFor(surface: ApiSurface): string | undefined {
+function environmentKeyFor(surface: ApiSurface): string | undefined {
   return surface === "REST" ? env().VITALIS_API_KEY : env().VITALIS_MCP_API_KEY;
 }
 
 /**
  * Checks the Bearer credential for a machine-facing surface.
  *
- * When no key is configured the surface is **closed**, not open: a missing
- * environment variable must never be the thing that publishes an API. The
- * comparison is constant-time so a caller cannot narrow the key down one byte
- * at a time by timing responses.
+ * Two sources are accepted, in this order: the key issued from the dashboard
+ * and stored as a digest, and the key configured in the environment. Neither
+ * being present leaves the surface **closed** - a missing credential must
+ * never be the thing that publishes an API.
+ *
+ * The environment comparison is constant-time so a caller cannot narrow the
+ * key down one byte at a time by timing responses. The stored credential is
+ * looked up by digest, which is a single indexed equality and leaks nothing
+ * about other keys.
  */
-export function authenticateApiRequest(
+export async function authenticateApiRequest(
   request: Request,
   surface: ApiSurface,
-): ApiAuthOutcome {
-  const expected = expectedKeyFor(surface);
-  if (expected === undefined) return { ok: false, reason: "NOT_CONFIGURED" };
-
+  access: AccessRepository,
+  requiredScope: ApiScope = "READ",
+): Promise<ApiAuthOutcome> {
   const presented = bearerToken(request);
-  if (presented === null) return { ok: false, reason: "MISSING" };
+  const expected = environmentKeyFor(surface);
 
-  return secretsMatch(presented, expected)
-    ? { ok: true, mode: "CREDENTIAL" }
-    : { ok: false, reason: "INVALID" };
+  if (presented === null) {
+    return expected === undefined
+      ? { ok: false, reason: "NOT_CONFIGURED" }
+      : { ok: false, reason: "MISSING" };
+  }
+
+  const stored = await access.findApiCredentialByTokenHash(hashToken(presented));
+
+  if (stored !== null && stored.surface === surface && stored.revokedAt === null) {
+    return allowsScope(stored.scopes, requiredScope)
+      ? { ok: true, mode: "CREDENTIAL", credentialId: stored.id }
+      : { ok: false, reason: "INSUFFICIENT_SCOPE" };
+  }
+
+  if (expected !== undefined && secretsMatch(presented, expected)) {
+    // A key configured in the environment reads and nothing else: writing into
+    // the clinic's data takes a credential somebody deliberately issued for it.
+    return requiredScope === "READ"
+      ? { ok: true, mode: "CREDENTIAL", credentialId: null }
+      : { ok: false, reason: "INSUFFICIENT_SCOPE" };
+  }
+
+  return { ok: false, reason: expected === undefined && stored === null ? "NOT_CONFIGURED" : "INVALID" };
 }
 
 /**
@@ -54,11 +88,14 @@ export function authenticateApiRequest(
  * published rules. Everything else on `/api/v1` stays credential-only, and demo
  * mode is rejected outright in production by the environment schema.
  */
-export function authenticateValidationRequest(request: Request): ApiAuthOutcome {
-  const credential = authenticateApiRequest(request, "REST");
+export async function authenticateValidationRequest(
+  request: Request,
+  access: AccessRepository,
+): Promise<ApiAuthOutcome> {
+  const credential = await authenticateApiRequest(request, "REST", access);
   if (credential.ok) return credential;
 
   return env().VITALIS_API_DEMO_MODE
-    ? { ok: true, mode: "DEMO" }
+    ? { ok: true, mode: "DEMO", credentialId: null }
     : credential;
 }

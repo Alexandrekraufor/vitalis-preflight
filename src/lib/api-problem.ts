@@ -59,6 +59,17 @@ export function problem(
  * `WWW-Authenticate` tells an honest integrator what to send; the body says
  * nothing about whether a key is configured, so probing cannot map the surface.
  */
+export function unauthorizedWithResourceMetadata(resourceMetadataUrl: string): Response {
+  return problem(
+    "UNAUTHORIZED",
+    "Credencial ausente ou inválida. Autorize o acesso ou envie uma chave válida.",
+    undefined,
+    {
+      "WWW-Authenticate": `Bearer realm="vitalis-preflight", resource_metadata="${resourceMetadataUrl}"`,
+    },
+  );
+}
+
 export function unauthorized(): Response {
   return problem(
     "UNAUTHORIZED",

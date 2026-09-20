@@ -17,7 +17,7 @@ interface UploadedCsv {
 /**
  * Reads the upload, refusing anything past the size ceiling.
  *
- * `file.name` is used only as a label stored next to the import record — it
+ * `file.name` is used only as a label stored next to the import record - it
  * never touches the filesystem, so a crafted name cannot escape a directory.
  */
 async function readUpload(request: Request): Promise<UploadedCsv | "TOO_LARGE" | null> {

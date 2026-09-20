@@ -8,6 +8,8 @@ import { err, ok, type Result } from "./result";
  * someone streaming a gigabyte at the validator.
  */
 export const MAX_JSON_BODY_BYTES = 64 * 1024;
+/** A batch of guides is bigger than a single payload, and still bounded. */
+export const MAX_BATCH_BODY_BYTES = 2 * 1024 * 1024;
 export const MAX_CSV_BYTES = 5 * 1024 * 1024;
 export const MAX_CSV_ROWS = 20_000;
 
@@ -17,7 +19,7 @@ export type BodyRejection = "TOO_LARGE" | "UNREADABLE";
  * Reads a request body without trusting `Content-Length`.
  *
  * The declared length is checked first as a cheap rejection, then the bytes are
- * counted as they arrive — a chunked request can claim any length it likes, or
+ * counted as they arrive - a chunked request can claim any length it likes, or
  * none at all.
  */
 export async function readBoundedText(

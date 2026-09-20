@@ -1,63 +1,45 @@
-import { z } from "zod";
-
-import { getWeeklyReport } from "@/application/reports/get-weekly-report.use-case";
-import { toIsoDate } from "@/lib/dates";
-import { guardMachineRequest } from "@/infrastructure/auth/api-guard";
+import { getPeriodReport } from "@/application/reports/get-period-report.use-case";
+import { toPeriodReportPayload } from "@/application/reports/period-report-payload";
+import { serveMachineRequest } from "@/infrastructure/auth/api-guard";
 import { appServices } from "@/infrastructure/composition-root";
 import { problem, withProblemDetails } from "@/lib/api-problem";
-import { toDecimalString } from "@/lib/money";
+import { toIsoDate } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
-const querySchema = z.object({ through: z.string().optional() });
-
+/**
+ * The seven-day report: a shortcut for `GET /api/v1/reports?days=7`.
+ *
+ * It exists because "a semana" is the question the clinic actually asks, and
+ * because integrators already point at this path. Filters and grouping live on
+ * the general endpoint.
+ */
 export async function GET(request: Request): Promise<Response> {
   return withProblemDetails(async () => {
-    const denied = guardMachineRequest(request, "REST");
-    if (denied !== null) return denied;
+    const services = await appServices();
 
-    const url = new URL(request.url);
-    const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
-    const rawThrough = parsed.success ? parsed.data.through : undefined;
-    const through = rawThrough === undefined ? undefined : toIsoDate(rawThrough);
+    return serveMachineRequest(
+      request,
+      "REST",
+      "/api/v1/reports/weekly",
+      services,
+      async () => {
+        const raw = new URL(request.url).searchParams.get("through");
+        const through = raw === null ? null : toIsoDate(raw);
 
-    if (rawThrough !== undefined && through === null) {
-      return problem("INVALID_PAYLOAD", "O parâmetro through deve ser uma data AAAA-MM-DD.");
-    }
+        if (raw !== null && through === null) {
+          return problem("INVALID_PAYLOAD", "O parâmetro through deve ser uma data AAAA-MM-DD.");
+        }
 
-    const { guides } = await appServices();
-    const report = await getWeeklyReport(
-      guides,
-      through === null || through === undefined ? {} : { through },
-    );
+        const report = await getPeriodReport(
+          services.guides,
+          through === null ? { days: 7 } : { days: 7, through },
+        );
 
-    if (report === null) {
-      return Response.json({ period: null, message: "Ainda não há guias validadas." });
-    }
-
-    return Response.json({
-      period: report.period,
-      problemShare: report.problemShare,
-      summary: {
-        ...report.summary,
-        amountAtRisk: Number(toDecimalString(report.summary.amountAtRisk)),
-        amountProtected: Number(toDecimalString(report.summary.amountProtected)),
-        topProblems: report.summary.topProblems.map((problemCount) => ({
-          ...problemCount,
-          amountAtRisk: Number(toDecimalString(problemCount.amountAtRisk)),
-        })),
-        byUnit: report.summary.byUnit.map((unit) => ({
-          ...unit,
-          amountAtRisk: Number(toDecimalString(unit.amountAtRisk)),
-        })),
+        return report === null
+          ? Response.json({ period: null, message: "Ainda não há guias validadas." })
+          : Response.json(toPeriodReportPayload(report));
       },
-      previous:
-        report.previous === null
-          ? null
-          : {
-              ...report.previous,
-              amountAtRisk: Number(toDecimalString(report.previous.amountAtRisk)),
-            },
-    });
+    );
   });
 }

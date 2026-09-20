@@ -1,15 +1,9 @@
 import { toValidationReport } from "@/application/guides/validation-report";
 import { validateGuide } from "@/application/guides/validate-guide.use-case";
 import type { RawGuideRecord } from "@/domain/normalization/normalization.types";
-import { authenticateValidationRequest } from "@/infrastructure/auth/api-credentials";
+import { serveMachineRequest } from "@/infrastructure/auth/api-guard";
 import { appServices } from "@/infrastructure/composition-root";
-import {
-  problem,
-  rateLimited,
-  unauthorized,
-  withProblemDetails,
-} from "@/lib/api-problem";
-import { clientKey, consumeRateLimit } from "@/lib/rate-limit";
+import { problem, withProblemDetails } from "@/lib/api-problem";
 import { MAX_JSON_BODY_BYTES, readBoundedText } from "@/lib/request-body";
 
 export const dynamic = "force-dynamic";
@@ -29,23 +23,25 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * data. Ingestion has its own path (`importGuides`, used by the CSV upload and
  * the seed) and its own authorization.
  *
- * What it does persist is one audit line — who asked, for which guide id, and
- * what came back — because "somebody ran the validator" is itself worth being
+ * What it does persist is one audit line - who asked, for which guide id, and
+ * what came back - because "somebody ran the validator" is itself worth being
  * able to reconstruct. That is telemetry about a request, not a change to a
  * guide.
  *
  * Status codes follow what actually happened: 400/422 when the payload cannot
- * be turned into a guide at all, and 200 when the preflight ran — including
+ * be turned into a guide at all, and 200 when the preflight ran - including
  * when it found problems, because finding problems is this endpoint working.
  */
 export async function POST(request: Request): Promise<Response> {
   return withProblemDetails(async () => {
-    const throttle = consumeRateLimit(clientKey(request, "validate"), RATE_LIMIT);
-    if (!throttle.allowed) return rateLimited(throttle.retryAfterSeconds);
+    const services = await appServices();
 
-    const auth = authenticateValidationRequest(request);
-    if (!auth.ok) return unauthorized();
-
+    return serveMachineRequest(
+      request,
+      "REST",
+      "/api/v1/guides/validate",
+      services,
+      async (caller) => {
     const body = await readBoundedText(request, MAX_JSON_BODY_BYTES);
 
     if (!body.ok) {
@@ -68,11 +64,9 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const services = await appServices();
-
     // Unknown properties are ignored rather than rejected: the parser reads the
     // 18 columns it knows and nothing else, so an integrator sending extra
-    // fields gets a validation, not an error — and cannot reach anything.
+    // fields gets a validation, not an error - and cannot reach anything.
     const validated = await validateGuide(payload as RawGuideRecord, services);
 
     if (!validated.ok) {
@@ -86,13 +80,19 @@ export async function POST(request: Request): Promise<Response> {
     const { result, normalizations } = validated.value;
 
     await services.access.recordAuditEvent({
-      action: "GUIDE_VALIDATION_REQUESTED",
-      actorKind: auth.mode === "DEMO" ? "SYSTEM" : "API_KEY",
-      actorUserId: null,
-      subject: result.guide.idGuia,
-      metadata: { decision: result.decision.status, mode: auth.mode },
-    });
+          action: "GUIDE_VALIDATION_REQUESTED",
+          actorKind: caller.mode === "DEMO" ? "SYSTEM" : "API_KEY",
+          actorUserId: null,
+          subject: result.guide.idGuia,
+          metadata: {
+            decision: result.decision.status,
+            mode: caller.mode,
+          },
+        });
 
-    return Response.json(toValidationReport(result, normalizations));
+        return Response.json(toValidationReport(result, normalizations));
+      },
+      { rule: RATE_LIMIT, allowDemoMode: true },
+    );
   });
 }

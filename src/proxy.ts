@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * visitors without a session cookie.
  *
  * **This is not the security boundary.** Proxy runs before rendering and has no
- * database, so all it can see is whether *some* cookie is present — never
+ * database, so all it can see is whether *some* cookie is present - never
  * whether it is valid, unexpired, or attached to an active account. A forged
  * cookie sails straight through here and is rejected by the page, the action or
  * the route handler, each of which resolves the session against PostgreSQL.
@@ -14,7 +14,25 @@ import { NextResponse, type NextRequest } from "next/server";
 const SESSION_COOKIE = "vitalis_session";
 
 /** Paths a signed-out visitor is allowed to reach. */
-const PUBLIC_PREFIXES = ["/login", "/invite", "/api/", "/mcp", "/_next", "/favicon.ico"];
+const PUBLIC_PREFIXES = [
+  "/login",
+  "/invite",
+  // Legal pages are linked from the cookie banner, which a signed-out
+  // visitor sees on the login screen. They read no session and no guide.
+  "/termos",
+  "/privacidade",
+  "/lgpd",
+  "/api/",
+  "/mcp",
+  // OAuth discovery, registration and token exchange are machine endpoints
+  // with no session. The consent screen at /oauth/authorize is deliberately
+  // absent from this list: it must be reached by a signed-in person.
+  "/.well-known/",
+  "/oauth/register",
+  "/oauth/token",
+  "/_next",
+  "/favicon.ico",
+];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
@@ -72,7 +90,12 @@ export function proxy(request: NextRequest): NextResponse {
           },
         })
       : NextResponse.redirect(
-          new URL(`/login?next=${encodeURIComponent(pathname)}`, request.url),
+          // The query string is part of where the person was going: an OAuth
+          // consent link is nothing without its parameters.
+          new URL(
+            `/login?next=${encodeURIComponent(`${pathname}${request.nextUrl.search}`)}`,
+            request.url,
+          ),
         );
 
   for (const [name, value] of Object.entries(headers)) {
