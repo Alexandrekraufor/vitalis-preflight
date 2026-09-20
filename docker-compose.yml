@@ -1,19 +1,24 @@
+# Banco de desenvolvimento local. Sobe com `pnpm db:up`.
+#
+# Tudo leva o prefixo vitalis- de propósito: esta máquina pode já ter outro
+# Postgres rodando, e o nome do serviço vira nome de container e de rede.
 services:
-  postgres:
+  vitalis-postgres:
     image: postgres:16-alpine
-    container_name: vitalis-preflight-db
+    container_name: vitalis-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-vitalis}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vitalis}
-      POSTGRES_DB: ${POSTGRES_DB:-vitalis_preflight}
+      POSTGRES_USER: vitalis
+      POSTGRES_PASSWORD: vitalis
+      POSTGRES_DB: vitalis_preflight
+    # 5433 no host para não brigar com um Postgres instalado na porta padrão.
+    # Banco de desenvolvimento: a senha acima não vale em lugar nenhum além daqui.
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "5433:5432"
     volumes:
       - vitalis-postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test:
-        ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vitalis} -d ${POSTGRES_DB:-vitalis_preflight}"]
+      test: ["CMD-SHELL", "pg_isready -U vitalis -d vitalis_preflight"]
       interval: 5s
       timeout: 5s
       retries: 10

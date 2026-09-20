@@ -2,6 +2,8 @@ import "server-only";
 
 import { z } from "zod";
 
+import { withoutBlankValues } from "./environment-values";
+
 /**
  * Environment contract. Parsed once, eagerly, so a misconfigured deployment
  * fails at boot instead of halfway through a validation run.
@@ -82,7 +84,7 @@ const environmentSchema = z
 export type Environment = z.infer<typeof environmentSchema>;
 
 function readEnvironment(): Environment {
-  const parsed = environmentSchema.safeParse(process.env);
+  const parsed = environmentSchema.safeParse(withoutBlankValues(process.env));
 
   if (!parsed.success) {
     // Only the variable names and the reasons are printed - never a value, so a

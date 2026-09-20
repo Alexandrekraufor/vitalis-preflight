@@ -1,0 +1,131 @@
+version: "3.7"
+
+# Vitalis Preflight - STACK COMPLETA (aplicação + banco + migrations)
+# Portainer -> Stacks -> Add stack -> nome: vitalis
+#
+# Antes de subir:
+#   1. docker volume create vitalis-postgres-data
+#   2. build e push das duas imagens (ver docs/deploy.md)
+#   3. edite os valores marcados abaixo direto neste YAML
+#
+# Todo serviço, rede e volume leva o prefixo vitalis-. Esta VPS já roda outras
+# stacks, inclusive outro Postgres, e nada aqui pode colidir com elas.
+#
+# Duas redes de propósito:
+#   internal                privada desta stack. O banco vive só aqui. O Swarm
+#                           publica ela como vitalis_internal, então não colide
+#                           com a rede interna de nenhuma outra stack.
+#   network_swarm_public    a rede do Traefik, compartilhada com o resto da VPS.
+#                           Só o vitalis-app entra nela.
+#
+# No primeiro deploy o vitalis-app pode reiniciar uma ou duas vezes enquanto o
+# vitalis-migrate aplica o schema. É esperado e se resolve sozinho.
+
+services:
+  vitalis-postgres:
+    image: postgres:16-alpine
+    hostname: "{{.Service.Name}}.{{.Task.Slot}}"
+    command:
+      [
+        postgres,
+        --max_connections=100,
+        --port=5432,
+      ]
+    environment:
+      - POSTGRES_USER=vitalis
+      - POSTGRES_DB=vitalis_preflight
+      - POSTGRES_PASSWORD=senha-do-postgres
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    # Sem `ports:` de propósito. O banco não publica porta no host e não entra
+    # na rede do Traefik: quem fala com ele é o vitalis-app, e mais ninguém.
+    volumes:
+      - vitalis-postgres-data:/var/lib/postgresql/data
+    networks:
+      - internal
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1024M
+      restart_policy:
+        condition: on-failure
+
+  vitalis-migrate:
+    image: usuario-do-docker-hub/vitalis-preflight-migrate:v1
+    # Roda uma vez, aplica as migrations pendentes e sai. Sair com sucesso é o
+    # fim normal deste serviço: o Portainer vai mostrá-lo como concluído.
+    environment:
+      - DATABASE_URL=postgres://vitalis:senha-do-postgres@vitalis-postgres:5432/vitalis_preflight
+    networks:
+      - internal
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+
+  vitalis-app:
+    image: usuario-do-docker-hub/vitalis-preflight:v1
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_TELEMETRY_DISABLED=1
+      - DATABASE_URL=postgres://vitalis:senha-do-postgres@vitalis-postgres:5432/vitalis_preflight
+      - APP_URL=https://dominio-do-vitalis
+      - VITALIS_API_DEMO_MODE=false
+      - OBSERVATION_INTERPRETER=heuristic
+      # Opcionais. Deixar em branco significa não configurado, e a stack sobe
+      # assim mesmo. Cole o valor na frente do = quando for usar.
+      - VITALIS_API_KEY=
+      - VITALIS_MCP_API_KEY=
+      - ANTHROPIC_API_KEY=
+      # Conta de avaliação. Preencha antes de rodar o pnpm seed:evaluator.
+      - EVALUATOR_EMAIL=
+      - EVALUATOR_PASSWORD=
+    networks:
+      - internal
+      - network_swarm_public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1024M
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=network_swarm_public
+        - traefik.http.routers.vitalis-app.rule=Host(`dominio-do-vitalis`)
+        - traefik.http.routers.vitalis-app.entrypoints=websecure
+        - traefik.http.routers.vitalis-app.tls=true
+        - traefik.http.routers.vitalis-app.tls.certresolver=letsencryptresolver
+        - traefik.http.services.vitalis-app.loadbalancer.server.port=3000
+
+volumes:
+  vitalis-postgres-data:
+    external: true
+    name: vitalis-postgres-data
+
+networks:
+  internal:
+    driver: overlay
+    attachable: false
+
+  network_swarm_public:
+    external: true
+    name: network_swarm_public
