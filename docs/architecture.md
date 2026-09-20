@@ -2,7 +2,7 @@
 
 ## O problema que a estrutura resolve
 
-Três públicos e um agente consomem a mesma pergunta — *esta guia pode ser enviada?* — por quatro caminhos: a interface web, um upload de CSV, a API REST e o MCP. A única decisão arquitetural que realmente importa aqui é que **existe uma só implementação dessa resposta**, e que os quatro caminhos são adaptadores dela.
+Três públicos e um agente consomem a mesma pergunta - *esta guia pode ser enviada?* - por quatro caminhos: a interface web, um upload de CSV, a API REST e o MCP. A única decisão arquitetural que realmente importa aqui é que **existe uma só implementação dessa resposta**, e que os quatro caminhos são adaptadores dela.
 
 ## Camadas
 
@@ -50,15 +50,15 @@ versão da guia + run + findings, em uma transação
     ▼  UI · REST · MCP
 ```
 
-O ponto que sustenta o resto: **as regras determinísticas rodam primeiro e sozinhas**. A interpretação da observação é reconciliada depois, contra o resultado delas. Um modelo de linguagem nunca tem a oportunidade de enfraquecer uma regra — só de acrescentar contexto que as regras não podiam enxergar.
+O ponto que sustenta o resto: **as regras determinísticas rodam primeiro e sozinhas**. A interpretação da observação é reconciliada depois, contra o resultado delas. Um modelo de linguagem nunca tem a oportunidade de enfraquecer uma regra - só de acrescentar contexto que as regras não podiam enxergar.
 
 ## Onde o auth entra sem contaminar o domínio
 
-Autenticação é um **contexto separado**, não um atributo que atravessa o resto. `domain/access/` conhece papéis, convites, política de senha e auditoria; não sabe o que é um finding. `domain/guides/` e `domain/rules/` não sabem que usuários existem — nenhuma assinatura de caso de uso de validação mudou para acomodar o login.
+Autenticação é um **contexto separado**, não um atributo que atravessa o resto. `domain/access/` conhece papéis, convites, política de senha e auditoria; não sabe o que é um finding. `domain/guides/` e `domain/rules/` não sabem que usuários existem - nenhuma assinatura de caso de uso de validação mudou para acomodar o login.
 
 Os dois contextos se encontram exatamente em um lugar: os adaptadores. Uma página chama `requireUser` antes de chamar `listGuides`; um route handler chama `guardSessionRequest` antes de chamar `importGuides`. O guard devolve um `AuthenticatedUser` que **não é repassado** para o motor de regras.
 
-O único ponto em que o mundo do acesso toca o mundo das guias é a auditoria: importar grava quem importou, validar grava quem perguntou. Isso passa por `AccessRepository.recordAuditEvent`, chamado do adaptador — não de dentro de `importGuides` nem do rule engine.
+O único ponto em que o mundo do acesso toca o mundo das guias é a auditoria: importar grava quem importou, validar grava quem perguntou. Isso passa por `AccessRepository.recordAuditEvent`, chamado do adaptador - não de dentro de `importGuides` nem do rule engine.
 
 ### Validação e ingestão são caminhos distintos
 
@@ -84,7 +84,7 @@ type GuideDecision =
 
 "Não pode ser enviada" se divide em duas situações que geram trabalhos diferentes: um erro objetivo que a recepção corrige, e uma ambiguidade que só uma pessoa resolve. A união impede que `canSubmit` discorde de `status`, e obriga o compilador a apontar todos os pontos de tratamento quando um estado novo aparecer.
 
-Ordem de precedência: **qualquer bloqueio vence qualquer ambiguidade**. Uma guia com autorização vencida *e* observação ambígua precisa primeiro do número correto — discutir o resto antes disso é desperdício.
+Ordem de precedência: **qualquer bloqueio vence qualquer ambiguidade**. Uma guia com autorização vencida *e* observação ambígua precisa primeiro do número correto - discutir o resto antes disso é desperdício.
 
 ### Validadores pequenos, com um contrato só
 
@@ -96,7 +96,7 @@ Nove validadores independentes, cada um em seu arquivo, cada um testável isolad
 
 ### Findings carregam a ação
 
-Cada `Finding` traz `expected`, `actual`, `source`, `evidence` e `recommendedAction`. A consequência é que a resposta da API, a tela "Por que essa guia caiu?" e a resposta da tool MCP são **projeções dos mesmos dados armazenados** — não textos gerados de novo. Uma decisão de agosto continua explicável em dezembro, com as palavras de agosto.
+Cada `Finding` traz `expected`, `actual`, `source`, `evidence` e `recommendedAction`. A consequência é que a resposta da API, a tela "Por que essa guia caiu?" e a resposta da tool MCP são **projeções dos mesmos dados armazenados** - não textos gerados de novo. Uma decisão de agosto continua explicável em dezembro, com as palavras de agosto.
 
 ### A IA é uma porta, e só extrai fatos
 
@@ -108,13 +108,13 @@ interface ObservationInterpreter {
 }
 ```
 
-Duas implementações: `heuristic` (determinística, offline, é o padrão) e `llm` (Anthropic via `TextCompletionClient`, com fallback para a heurística). O tipo de fato é um union fechado — um modelo não pode inventar uma categoria nova de problema. E toda evidência é conferida contra o texto original: um trecho que não esteja literalmente na observação é descartado, e o descarte derruba a confiança e pede revisão.
+Duas implementações: `heuristic` (determinística, offline, é o padrão) e `llm` (Anthropic via `TextCompletionClient`, com fallback para a heurística). O tipo de fato é um union fechado - um modelo não pode inventar uma categoria nova de problema. E toda evidência é conferida contra o texto original: um trecho que não esteja literalmente na observação é descartado, e o descarte derruba a confiança e pede revisão.
 
 O nome do interpretador e o modelo usado ficam gravados em cada `validation_run`.
 
 ### Dinheiro em centavos, `numeric` no banco
 
-`Money` é um número inteiro de centavos com marca de tipo. R$ 62,00 não é representável em ponto flutuante, e este sistema compara valores cobrados contra uma tabela de referência — um centavo de deriva seria um finding fantasma. No banco, `numeric(12,2)`.
+`Money` é um número inteiro de centavos com marca de tipo. R$ 62,00 não é representável em ponto flutuante, e este sistema compara valores cobrados contra uma tabela de referência - um centavo de deriva seria um finding fantasma. No banco, `numeric(12,2)`.
 
 ### Datas como `IsoDate` marcado
 
@@ -132,17 +132,17 @@ Cada `validation_run` guarda `rulesVersion` **e** `rulesHash`: a versão diz qua
 
 ### MCP stateless sobre os mesmos casos de uso
 
-`WebStandardStreamableHTTPServerTransport` sem `sessionIdGenerator`: nada é guardado entre requisições, e o transporte fala `Request`/`Response` padrão — exatamente o que um route handler do Next recebe e devolve, sem adaptador.
+`WebStandardStreamableHTTPServerTransport` sem `sessionIdGenerator`: nada é guardado entre requisições, e o transporte fala `Request`/`Response` padrão - exatamente o que um route handler do Next recebe e devolve, sem adaptador.
 
 As quatro tools são somente leitura e chamam os mesmos casos de uso da API REST. Um agente e uma pessoa recebem a mesma resposta sobre a mesma guia porque é literalmente o mesmo código.
 
 ## O que deliberadamente não existe
 
 - **Fila, worker, Redis, mensageria.** Validar 80 guias leva milissegundos. Uma fila aqui seria infraestrutura para esconder que não há problema de escala.
-- **Camada de serviço genérica, DTOs em três níveis, mapeadores automáticos.** Os casos de uso são funções. A "camada de aplicação" é um diretório de funções com portas explícitas, porque isso é o que dá o desacoplamento — o resto seria cerimônia.
+- **Camada de serviço genérica, DTOs em três níveis, mapeadores automáticos.** Os casos de uso são funções. A "camada de aplicação" é um diretório de funções com portas explícitas, porque isso é o que dá o desacoplamento - o resto seria cerimônia.
 - **Framework de injeção de dependência.** Um arquivo de composição e parâmetros de função resolvem, e os testes injetam repositórios in-memory sem mágica.
 - **Cache.** As leituras são diretas e rápidas. O arquivo de regras é lido uma vez por processo, porque é imutável.
-- **Biblioteca de autenticação completa.** `better-auth` é compatível com esta stack e foi avaliado; foi descartado porque tornar o cadastro *invite-only* exigiria alcançar API interna dela ou colocar um hook num endpoint público de signup, e porque ela monta dezenas de endpoints que precisariam ser auditados e travados — o oposto do objetivo. O que ficou no lugar não é criptografia manual: argon2id vem de biblioteca nativa e os tokens do CSPRNG da plataforma. O raciocínio completo está em `docs/security.md`.
+- **Biblioteca de autenticação completa.** `better-auth` é compatível com esta stack e foi avaliado; foi descartado porque tornar o cadastro *invite-only* exigiria alcançar API interna dela ou colocar um hook num endpoint público de signup, e porque ela monta dezenas de endpoints que precisariam ser auditados e travados - o oposto do objetivo. O que ficou no lugar não é criptografia manual: argon2id vem de biblioteca nativa e os tokens do CSPRNG da plataforma. O raciocínio completo está em `docs/security.md`.
 - **JWT de sessão.** Um token assinado carrega claims que só podem ser revogados esperando expirar. Sessão opaca em banco permite desativar um membro e derrubar todos os dispositivos dele na mesma transação.
 - **Redis para rate limit.** Ver `docs/security.md`: a limitação de contar por instância está assumida e documentada.
 
@@ -150,8 +150,8 @@ As quatro tools são somente leitura e chamam os mesmos casos de uso da API REST
 
 183 testes, sem banco:
 
-- **Unitários** — normalização, parsing, cada validador, interpretação da observação e reconciliação, e o dataset completo com os casos nomeados no enunciado fixados por id.
-- **Integração** — os *route handlers reais* (`POST /api/v1/guides/validate`, importação CSV, exportação, detalhe) e o endpoint MCP com um handshake JSON-RPC de verdade, todos contra repositórios in-memory que reproduzem o versionamento por conteúdo.
-- **Acesso e segurança** — hashing e sessões, ciclo completo do convite, invariantes da equipe, e as fronteiras: anônimo, MEMBER, ADMIN, Bearer REST e Bearer MCP. As ações de administrador são chamadas diretamente com a sessão de um MEMBER, que é o que alguém faria pelo DevTools.
+- **Unitários** - normalização, parsing, cada validador, interpretação da observação e reconciliação, e o dataset completo com os casos nomeados no enunciado fixados por id.
+- **Integração** - os *route handlers reais* (`POST /api/v1/guides/validate`, importação CSV, exportação, detalhe) e o endpoint MCP com um handshake JSON-RPC de verdade, todos contra repositórios in-memory que reproduzem o versionamento por conteúdo.
+- **Acesso e segurança** - hashing e sessões, ciclo completo do convite, invariantes da equipe, e as fronteiras: anônimo, MEMBER, ADMIN, Bearer REST e Bearer MCP. As ações de administrador são chamadas diretamente com a sessão de um MEMBER, que é o que alguém faria pelo DevTools.
 
 O banco é substituído; as regras, os handlers e os casos de uso são os de produção.

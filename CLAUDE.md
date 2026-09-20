@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# Vitalis Preflight — padrões do projeto
+# Vitalis Preflight - padrões do projeto
 
 Estas regras valem para qualquer alteração neste repositório.
 
@@ -22,8 +22,8 @@ Estas regras valem para qualquer alteração neste repositório.
 ## Camadas
 
 ```
-app/            rotas Next (UI, Server Actions, HTTP) — sem regra de negócio
-components/     apresentação — sem regra de negócio
+app/            rotas Next (UI, Server Actions, HTTP) - sem regra de negócio
+components/     apresentação - sem regra de negócio
 application/    casos de uso e portas
 domain/         regras, tipos e decisões (guides + access)
 infrastructure/ banco, arquivos, LLM, CSV, auth, e-mail
@@ -52,8 +52,11 @@ mcp/            tools MCP sobre os mesmos casos de uso
 
 ## Regras de convênio
 
-- `data/source/regras_convenio.json` é a única fonte da verdade.
-- **Nunca invente regra de convênio, código de procedimento, CID ou número de autorização** — nem no código, nem em prompt, nem em documentação.
+- **A versão publicada em `rule_sets` é a fonte da verdade** das regras em tempo de execução. `data/source/regras_convenio.json` é a semente: vale como origem, é publicada como primeira versão num banco vazio, e continua servindo os testes e o seed sem banco.
+- **Versão publicada é imutável.** Editar cria rascunho; publicar promove o rascunho e arquiva a anterior. Guia já decidida mantém a versão e o hash que a avaliaram, e reavaliar é uma ação explícita que registra uma validação nova em vez de reescrever a antiga.
+- **Mudou regra na tela? Rode `pnpm rules:export` e `pnpm test`.** O arquivo semente é a fixture dos testes; sem exportar, a suíte e o sistema em execução divergem.
+- **Os tipos de regra são fechados.** A tela cadastra plano, procedimento, limite e prazo; criar um tipo novo de checagem continua sendo mudança de código, com teste. Documento que não passa no schema do domínio não vira rascunho, quanto mais regra vigente.
+- **Nunca invente regra de convênio, código de procedimento, CID ou número de autorização** - nem no código, nem em prompt, nem em documentação.
 - O modelo de IA só extrai fatos da observação da recepção; ele nunca decide e toda conclusão carrega evidência textual literal.
 - Regras que dependem de dado que o dataset não tem ficam modeladas e desligadas, documentadas em `docs/assumptions.md`.
 
@@ -67,7 +70,7 @@ mcp/            tools MCP sobre os mesmos casos de uso
 ## Testes
 
 - Alterou `domain/` ou `application/`? O teste vem junto.
-- Mexeu em autorização? O teste chama a ação/endpoint **diretamente** com a sessão errada — não basta verificar que a UI esconde o botão.
+- Mexeu em autorização? O teste chama a ação/endpoint **diretamente** com a sessão errada - não basta verificar que a UI esconde o botão.
 - Testes de rota usam os handlers reais com repositórios in-memory (`tests/fixtures`).
 - Não escreva teste preso a markup visual.
 - Os casos do dataset fixados em `tests/unit/dataset.test.ts` não devem ser afrouxados para fazer um teste passar.
@@ -78,3 +81,4 @@ mcp/            tools MCP sobre os mesmos casos de uso
 - Sem `console.log` de depuração, import morto ou código comentado.
 - Sem `eslint-disable` ou `ts-ignore` sem um comentário explicando por quê.
 - Código e identificadores em inglês; texto de interface, mensagens de finding e nomes de tools MCP em português brasileiro.
+- **Proibido travessão.** O caractere de travessão e o de meia-risca não entram em lugar nenhum: nem em código, comentário, texto de interface, mensagem de finding, documentação, commit ou resposta de chat. Use hífen, vírgula, dois-pontos ou parênteses. Regra sem exceção.

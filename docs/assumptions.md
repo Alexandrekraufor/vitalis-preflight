@@ -8,7 +8,7 @@ O que este sistema **não** conclui, e por quê. Cada item aqui é uma decisão 
 
 **O dado que falta:** a data em que a guia chegou ao convênio.
 
-**Por que `data_lancamento` não serve:** ela registra o momento em que a recepção digitou a guia no sistema de gestão da clínica. Lançar internamente e enviar ao convênio são dois eventos distintos, e o dataset não diz nada sobre o segundo. Tratar um como o outro produziria guias reprovadas — ou aprovadas — por um prazo que ninguém mediu.
+**Por que `data_lancamento` não serve:** ela registra o momento em que a recepção digitou a guia no sistema de gestão da clínica. Lançar internamente e enviar ao convênio são dois eventos distintos, e o dataset não diz nada sobre o segundo. Tratar um como o outro produziria guias reprovadas - ou aprovadas - por um prazo que ninguém mediu.
 
 **O que o sistema faz:** o validador existe (`submission-deadline.validator.ts`) e roda assim que receber uma data de envio real através de `SupplementaryGuideData.submittedToConventionAt`. Enquanto esse dado não existir, ele não emite finding algum.
 
@@ -20,7 +20,7 @@ O que este sistema **não** conclui, e por quê. Cada item aqui é uma decisão 
 
 **O dado que falta:** a data de emissão da autorização. O dataset traz apenas `autorizacao_validade`, o último dia de cobertura.
 
-**Por que não dá para derivar:** sem a emissão, qualquer janela seria arbitrária — assumir "emitida N dias antes da validade" torna a regra circular e sempre verdadeira.
+**Por que não dá para derivar:** sem a emissão, qualquer janela seria arbitrária - assumir "emitida N dias antes da validade" torna a regra circular e sempre verdadeira.
 
 **O que o sistema faz:** `authorization-validity-window.validator.ts` está implementado e silencioso até receber `SupplementaryGuideData.authorizationIssuedAt`.
 
@@ -32,7 +32,7 @@ O dataset traz duas datas fora do padrão: `03/08/2026` e `26/08/2026`. A segund
 
 **Decisão:** interpretar como dia/mês, a convenção brasileira, consistente com o restante do arquivo.
 
-**Por que é seguro:** a conversão é registrada como uma normalização auditável (`DATE_REFORMATTED`), aparece na tela da guia, na resposta da API e no banco. Ninguém precisa confiar na decisão — dá para conferir.
+**Por que é seguro:** a conversão é registrada como uma normalização auditável (`DATE_REFORMATTED`), aparece na tela da guia, na resposta da API e no banco. Ninguém precisa confiar na decisão - dá para conferir.
 
 Datas impossíveis sob essa leitura (`31/02/2026`) **não** são convertidas: a guia é rejeitada com erro estrutural, em vez de ser "consertada".
 
@@ -56,7 +56,7 @@ O texto da observação viaja inteiro nas respostas da API e do MCP, para que um
 
 ## 7. Consulta médica no Plano Bem
 
-O Plano Bem não cobre consulta médica e a observação da regra diz que consulta "é faturada como particular". O sistema emite `PROCEDURE_NOT_COVERED` (bloqueante) e repassa a observação na mensagem — mas **não** refatura a guia como particular. Mudar a forma de faturamento é decisão comercial, não de validação.
+O Plano Bem não cobre consulta médica e a observação da regra diz que consulta "é faturada como particular". O sistema emite `PROCEDURE_NOT_COVERED` (bloqueante) e repassa a observação na mensagem - mas **não** refatura a guia como particular. Mudar a forma de faturamento é decisão comercial, não de validação.
 
 ## 8. Remarcação de sessão não invalida autorização
 
@@ -78,7 +78,7 @@ O sistema marca `REVIEW_REQUIRED` e **não sugere o código correto**. Drenagem 
 
 ## 11. Convênio desconhecido
 
-Um convênio fora do arquivo de regras gera `UNKNOWN_CONVENTION` com severidade de revisão, e **nenhuma outra regra de convênio é aplicada** — não há regra a aplicar. O sistema não assume o comportamento de um convênio parecido.
+Um convênio fora do arquivo de regras gera `UNKNOWN_CONVENTION` com severidade de revisão, e **nenhuma outra regra de convênio é aplicada** - não há regra a aplicar. O sistema não assume o comportamento de um convênio parecido.
 
 ## 12. Observação que o interpretador não reconhece
 
@@ -92,7 +92,7 @@ O relatório semanal agrupa por `data_atendimento`, não por `data_lancamento`, 
 
 ## 14. Volume
 
-As agregações dos painéis são feitas em memória sobre a lista de guias. É adequado para a ordem de grandeza deste caso (dezenas a poucos milhares de guias) e mantém a lógica testável sem banco. Acima disso, o lugar de mover para SQL é `application/reports/` — nenhuma regra de negócio muda.
+As agregações dos painéis são feitas em memória sobre a lista de guias. É adequado para a ordem de grandeza deste caso (dezenas a poucos milhares de guias) e mantém a lógica testável sem banco. Acima disso, o lugar de mover para SQL é `application/reports/` - nenhuma regra de negócio muda.
 
 ## 15. Validar uma guia não a registra
 
