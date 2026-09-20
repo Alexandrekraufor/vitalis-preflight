@@ -103,13 +103,19 @@ na imagem de migrations.
 
 ```bash
 docker run --rm -it \
-  --network vitalis_internal \
-  -e DATABASE_URL=postgres://vitalis:senha-do-postgres@vitalis-postgres:5432/vitalis_preflight \
+  --network container:$(docker ps -q -f name=vitalis_vitalis-postgres) \
+  -e DATABASE_URL=postgres://vitalis:senha-do-postgres@127.0.0.1:5432/vitalis_preflight \
   alexandrekraufort/vitalis-preflight-migrate:1.1 \
   pnpm exec tsx --conditions=react-server scripts/bootstrap-admin.mts
 ```
 
-Pergunta e-mail, nome e senha, sem eco.
+Pergunta e-mail, nome e senha, sem eco. A senha precisa de 12 caracteres ou
+mais.
+
+O `--network container:` compartilha a pilha de rede do container do banco, e
+é por isso que o host do `DATABASE_URL` aqui é `127.0.0.1` e não
+`vitalis-postgres`. A rede `internal` da stack não aceita anexo manual de
+propósito, e este caminho não precisa que ela aceite.
 
 ## 6. Carregar as guias
 
@@ -122,8 +128,8 @@ Quando alguém de fora precisar avaliar o sistema:
 
 ```bash
 docker run --rm \
-  --network vitalis_internal \
-  -e DATABASE_URL=postgres://vitalis:senha-do-postgres@vitalis-postgres:5432/vitalis_preflight \
+  --network container:$(docker ps -q -f name=vitalis_vitalis-postgres) \
+  -e DATABASE_URL=postgres://vitalis:senha-do-postgres@127.0.0.1:5432/vitalis_preflight \
   -e EVALUATOR_EMAIL=email-do-avaliador \
   -e EVALUATOR_PASSWORD=senha-do-avaliador \
   alexandrekraufort/vitalis-preflight-migrate:1.1 \
