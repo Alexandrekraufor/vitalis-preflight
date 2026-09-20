@@ -64,18 +64,23 @@ Volume externo de propósito: derrubar e recriar a stack não leva o banco junto
 
 ## 3. Apontar o DNS
 
-Um registro A do subdomínio escolhido para o IP da VPS. O Traefik emite o
-certificado sozinho pelo `letsencryptresolver` no primeiro acesso.
+Um único registro A, `vitalis-app.api-hub.me`, para o IP da VPS, sem proxy do
+Cloudflare. O Traefik emite o certificado sozinho pelo `letsencryptresolver`
+no primeiro acesso.
+
+Um host só atende tudo: painel, `/api/v1`, `/mcp` e os metadados OAuth. Eles
+precisam compartilhar a origem, porque o emissor OAuth e o `resource` do token
+MCP saem os dois do `APP_URL`.
 
 ## 4. Subir a stack
 
 Portainer, **Stacks**, **Add stack**, nome `vitalis`, e cole o conteúdo de
-`docker-stack.yml`. Antes de dar deploy, troque os valores no próprio editor:
+`docker-stack.yml`. O domínio já está preenchido como `vitalis-app.api-hub.me`.
+Antes de dar deploy, troque no próprio editor:
 
 | Onde está | Troque por |
 | --- | --- |
 | `senha-do-postgres` | a senha do banco, nos três lugares em que aparece |
-| `dominio-do-vitalis` | o subdomínio, no `APP_URL` e na regra do Traefik |
 | `usuario-do-docker-hub` | seu usuário do registry, nas duas imagens |
 
 As linhas que terminam em `=` são opcionais: cole o valor na frente do sinal de
@@ -108,7 +113,7 @@ Pergunta e-mail, nome e senha, sem eco.
 
 ## 6. Carregar as guias
 
-Entre em `https://seu-subdominio/importar` e suba o CSV. O mesmo caminho da
+Entre em `https://vitalis-app.api-hub.me/importar` e suba o CSV. O mesmo caminho da
 avaliação, sem script de carga.
 
 ## 7. Conta de avaliação

@@ -81,7 +81,7 @@ services:
       - PORT=3000
       - NEXT_TELEMETRY_DISABLED=1
       - DATABASE_URL=postgres://vitalis:senha-do-postgres@vitalis-postgres:5432/vitalis_preflight
-      - APP_URL=https://dominio-do-vitalis
+      - APP_URL=https://vitalis-app.api-hub.me
       - VITALIS_API_DEMO_MODE=false
       - OBSERVATION_INTERPRETER=heuristic
       # Opcionais. Deixar em branco significa não configurado, e a stack sobe
@@ -110,7 +110,7 @@ services:
       labels:
         - traefik.enable=true
         - traefik.docker.network=network_swarm_public
-        - traefik.http.routers.vitalis-app.rule=Host(`dominio-do-vitalis`)
+        - traefik.http.routers.vitalis-app.rule=Host(`vitalis-app.api-hub.me`)
         - traefik.http.routers.vitalis-app.entrypoints=websecure
         - traefik.http.routers.vitalis-app.tls=true
         - traefik.http.routers.vitalis-app.tls.certresolver=letsencryptresolver
