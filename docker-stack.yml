@@ -56,7 +56,7 @@ services:
         condition: on-failure
 
   vitalis-migrate:
-    image: kraufort/vitalis-preflight-migrate:1.0.0
+    image: alexandrekraufort/vitalis-preflight-migrate:1.0.0
     # Roda uma vez, aplica as migrations pendentes e sai. Sair com sucesso é o
     # fim normal deste serviço: o Portainer vai mostrá-lo como concluído.
     environment:
@@ -75,7 +75,7 @@ services:
         max_attempts: 5
 
   vitalis-app:
-    image: kraufort/vitalis-preflight:1.0.0
+    image: alexandrekraufort/vitalis-preflight:1.0.0
     environment:
       - NODE_ENV=production
       - PORT=3000
