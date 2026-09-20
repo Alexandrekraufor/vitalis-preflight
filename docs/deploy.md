@@ -48,10 +48,10 @@ host e não é alcançável nem pelas outras stacks da VPS.
 O Swarm não constrói imagem, ele puxa. Duas imagens, da sua máquina:
 
 ```bash
-docker build -t alexandrekraufort/vitalis-preflight:1.0.0 -f Dockerfile .
-docker build -t alexandrekraufort/vitalis-preflight-migrate:1.0.0 -f Dockerfile.migrate .
-docker push alexandrekraufort/vitalis-preflight:1.0.0
-docker push alexandrekraufort/vitalis-preflight-migrate:1.0.0
+docker build -t alexandrekraufort/vitalis-preflight:1.1 -f Dockerfile .
+docker build -t alexandrekraufort/vitalis-preflight-migrate:1.1 -f Dockerfile.migrate .
+docker push alexandrekraufort/vitalis-preflight:1.1
+docker push alexandrekraufort/vitalis-preflight-migrate:1.1
 ```
 
 ## 2. Criar o volume, na VPS
@@ -105,7 +105,7 @@ na imagem de migrations.
 docker run --rm -it \
   --network vitalis_internal \
   -e DATABASE_URL=postgres://vitalis:senha-do-postgres@vitalis-postgres:5432/vitalis_preflight \
-  alexandrekraufort/vitalis-preflight-migrate:1.0.0 \
+  alexandrekraufort/vitalis-preflight-migrate:1.1 \
   pnpm exec tsx --conditions=react-server scripts/bootstrap-admin.mts
 ```
 
@@ -126,7 +126,7 @@ docker run --rm \
   -e DATABASE_URL=postgres://vitalis:senha-do-postgres@vitalis-postgres:5432/vitalis_preflight \
   -e EVALUATOR_EMAIL=email-do-avaliador \
   -e EVALUATOR_PASSWORD=senha-do-avaliador \
-  alexandrekraufort/vitalis-preflight-migrate:1.0.0 \
+  alexandrekraufort/vitalis-preflight-migrate:1.1 \
   pnpm exec tsx --conditions=react-server scripts/provision-evaluator.mts
 ```
 

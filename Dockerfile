@@ -22,6 +22,12 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
+# O server.js do Next standalone usa `process.env.HOSTNAME` como endereço de
+# bind, e o Docker SEMPRE define HOSTNAME com o id do container. Sem esta linha
+# ele escuta só na interface daquele id, nunca em 127.0.0.1, e o HEALTHCHECK
+# abaixo falha para sempre, o que no Swarm vira SIGTERM (exit 143) e reinício
+# em loop. Não é ajuste de ambiente: sem isto a imagem quebra em qualquer host.
+ENV HOSTNAME=0.0.0.0
 
 # The server runs as a user that owns nothing it could overwrite.
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
