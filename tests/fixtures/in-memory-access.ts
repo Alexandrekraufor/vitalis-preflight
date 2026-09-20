@@ -2,6 +2,10 @@ import { randomUUID } from "node:crypto";
 
 import type {
   AccessRepository,
+  ApiCredentialMatch,
+  EvaluationCredential,
+  UpsertEvaluationCredentialInput,
+  CreateApiCredentialInput,
   CreateInvitationInput,
   CreateUserInput,
   SessionRecord,
@@ -21,6 +25,7 @@ import type {
   UserStatus,
 } from "@/domain/access/access.types";
 import { normalizeEmail } from "@/domain/access/access.types";
+import type { ApiCredential } from "@/domain/access/api-credential";
 import type { AuditEntry, AuditRecord } from "@/domain/access/audit";
 
 /** Mutable mirror of `UserCredentials`, which the port exposes as readonly. */
@@ -62,6 +67,8 @@ export function createInMemoryAccessRepository(): AccessRepository {
   const sessions = new Map<string, StoredSession>();
   const invitations = new Map<string, StoredInvitationRow>();
   const audit: AuditRecord[] = [];
+  const credentials: { credential: ApiCredential; tokenHash: string }[] = [];
+  const evaluation: EvaluationCredential[] = [];
 
   function publicUser(user: StoredUser): AuthenticatedUser {
     return {
@@ -240,6 +247,102 @@ export function createInMemoryAccessRepository(): AccessRepository {
 
     revokeInvitation(id: string, at: Date): Promise<boolean> {
       return Promise.resolve(transition(invitations, id, "REVOKED", at));
+    },
+
+    createApiCredential(input: CreateApiCredentialInput): Promise<string> {
+      const id = randomUUID();
+      credentials.push({
+        credential: {
+          id,
+          name: input.name,
+          surface: input.surface,
+          scopes: input.scopes,
+          hint: input.hint,
+          createdAt: new Date(),
+          createdByName: users.get(input.createdBy)?.name ?? null,
+          lastUsedAt: null,
+          revokedAt: null,
+        },
+        tokenHash: input.tokenHash,
+      });
+      return Promise.resolve(id);
+    },
+
+    setUserPassword(userId: string, passwordHash: string): Promise<void> {
+      const user = users.get(userId);
+      if (user !== undefined) user.passwordHash = passwordHash;
+      return Promise.resolve();
+    },
+
+    upsertEvaluationCredential(input: UpsertEvaluationCredentialInput): Promise<void> {
+      const index = evaluation.findIndex((entry) => entry.surface === input.surface);
+      const entry: EvaluationCredential = {
+        id: randomUUID(),
+        name: input.name,
+        surface: input.surface,
+        scopes: input.scopes,
+        secret: input.secret,
+        revokedAt: null,
+      };
+
+      if (index >= 0) evaluation.splice(index, 1, entry);
+      else evaluation.push(entry);
+
+      credentials.push({
+        credential: {
+          id: entry.id,
+          name: input.name,
+          surface: input.surface,
+          scopes: input.scopes,
+          hint: input.hint,
+          createdAt: new Date(),
+          createdByName: null,
+          lastUsedAt: null,
+          revokedAt: null,
+        },
+        tokenHash: input.tokenHash,
+      });
+
+      return Promise.resolve();
+    },
+
+    listEvaluationCredentials(): Promise<readonly EvaluationCredential[]> {
+      return Promise.resolve(evaluation);
+    },
+
+    listApiCredentials(): Promise<readonly ApiCredential[]> {
+      return Promise.resolve(credentials.map((entry) => entry.credential));
+    },
+
+    findApiCredentialByTokenHash(tokenHash: string): Promise<ApiCredentialMatch | null> {
+      const found = credentials.find((entry) => entry.tokenHash === tokenHash);
+      return Promise.resolve(
+        found === undefined
+          ? null
+          : {
+              id: found.credential.id,
+              surface: found.credential.surface,
+              scopes: found.credential.scopes,
+              revokedAt: found.credential.revokedAt,
+            },
+      );
+    },
+
+    touchApiCredential(id: string, at: Date): Promise<void> {
+      const found = credentials.find((entry) => entry.credential.id === id);
+      if (found !== undefined) {
+        found.credential = { ...found.credential, lastUsedAt: at };
+      }
+      return Promise.resolve();
+    },
+
+    revokeApiCredential(id: string, at: Date): Promise<boolean> {
+      const found = credentials.find((entry) => entry.credential.id === id);
+      if (found === undefined || found.credential.revokedAt !== null) {
+        return Promise.resolve(false);
+      }
+      found.credential = { ...found.credential, revokedAt: at };
+      return Promise.resolve(true);
     },
 
     recordAuditEvent(entry: AuditEntry): Promise<void> {

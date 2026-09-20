@@ -9,7 +9,7 @@ import {
   setMemberRole,
   setMemberStatus,
 } from "@/application/access/manage-team.use-case";
-import { USER_ROLES, type AuthenticatedUser } from "@/domain/access/access.types";
+import { ASSIGNABLE_ROLES, type AuthenticatedUser } from "@/domain/access/access.types";
 import { requireAdminForAction, isAccessDeniedError } from "@/infrastructure/auth/guards";
 import { sessionTokens } from "@/infrastructure/auth/session";
 import { appServices } from "@/infrastructure/composition-root";
@@ -25,7 +25,7 @@ function failure(error: string): TeamActionState {
 
 /**
  * Wraps an administrator action so a denied call becomes a message instead of
- * an unhandled rejection — and so authorization is re-checked on the server for
+ * an unhandled rejection - and so authorization is re-checked on the server for
  * every single invocation, never inferred from what the page chose to render.
  */
 type AdminOperation = (
@@ -49,7 +49,7 @@ async function asAdmin(run: AdminOperation): Promise<TeamActionState> {
 
 const inviteSchema = z.object({
   email: z.email().max(320),
-  role: z.enum(USER_ROLES),
+  role: z.enum(ASSIGNABLE_ROLES),
 });
 
 export async function inviteMemberAction(
@@ -140,7 +140,7 @@ export async function setMemberStatusAction(
   });
 }
 
-const roleSchema = z.object({ userId: z.uuid(), role: z.enum(USER_ROLES) });
+const roleSchema = z.object({ userId: z.uuid(), role: z.enum(ASSIGNABLE_ROLES) });
 
 export async function setMemberRoleAction(
   _previous: TeamActionState,

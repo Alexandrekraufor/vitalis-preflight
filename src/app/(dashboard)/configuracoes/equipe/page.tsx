@@ -1,7 +1,8 @@
 import { getTeamOverview } from "@/application/access/manage-team.use-case";
 import { AccessDenied } from "@/components/layout/access-denied";
 import { TeamManagement } from "@/components/team/team-management";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageContent } from "@/components/layout/page-content";
+import { PageHeader } from "@/components/layout/page-header";
 import { requireUser } from "@/infrastructure/auth/guards";
 import { appServices } from "@/infrastructure/composition-root";
 
@@ -34,11 +35,13 @@ export default async function TeamPage() {
         title="Equipe"
         description="Quem acessa o Vitalis Preflight, com que nível, e quais convites estão em aberto."
       />
-      <TeamManagement
-        members={members}
-        invitations={invitations}
-        currentUserId={user.id}
-      />
+
+      <PageContent>        <TeamManagement
+          members={members}
+          invitations={invitations}
+          currentUserId={user.id}
+        />
+      </PageContent>
     </>
   );
 }

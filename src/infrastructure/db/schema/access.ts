@@ -9,7 +9,10 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import type { ApiScope } from "@/domain/access/api-credential";
+
 import {
+  apiSurfaceEnum,
   auditActionEnum,
   invitationStatusEnum,
   userRoleEnum,
@@ -70,7 +73,7 @@ export const sessions = pgTable(
 );
 
 /**
- * One-time invitations — the only way to create an account.
+ * One-time invitations - the only way to create an account.
  *
  * Like sessions, the token is stored hashed: an administrator with database
  * access cannot recover a pending invitation link and use it themselves.
@@ -99,7 +102,7 @@ export const invitations = pgTable(
 /**
  * Trail of sensitive actions.
  *
- * `metadata` holds identifiers and decisions only — never a token, a password,
+ * `metadata` holds identifiers and decisions only - never a token, a password,
  * a session value or an authorization header.
  */
 export const auditEvents = pgTable(
@@ -143,4 +146,43 @@ export const invitationsRelations = relations(invitations, ({ one }) => ({
 
 export const auditEventsRelations = relations(auditEvents, ({ one }) => ({
   actor: one(users, { fields: [auditEvents.actorUserId], references: [users.id] }),
+}));
+
+/**
+ * Bearer credentials issued from the application.
+ *
+ * Only the digest is stored, so this table cannot be replayed as access - the
+ * same rule as `sessions` and `invitations`. `hint` holds the first characters
+ * of the secret so two keys can be told apart on screen without revealing
+ * either one.
+ */
+export const apiCredentials = pgTable(
+  "api_credentials",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    surface: apiSurfaceEnum("surface").notNull(),
+    /** What this key may do: READ, WRITE, or both. */
+    scopes: text("scopes").array().$type<ApiScope[]>().notNull().default(["READ"]),
+    tokenHash: text("token_hash").notNull(),
+    hint: text("hint").notNull(),
+    /**
+     * Only ever set for the credential the evaluation user reads from the
+     * panel. Every other key keeps its digest and nothing else: this column is
+     * the deliberate, documented exception, not the rule.
+     */
+    evaluationSecret: text("evaluation_secret"),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("api_credentials_token_hash_unique").on(table.tokenHash),
+    index("api_credentials_surface_idx").on(table.surface),
+  ],
+);
+
+export const apiCredentialsRelations = relations(apiCredentials, ({ one }) => ({
+  issuer: one(users, { fields: [apiCredentials.createdBy], references: [users.id] }),
 }));

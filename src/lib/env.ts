@@ -30,7 +30,7 @@ const environmentSchema = z
     VITALIS_MCP_API_KEY: z.string().min(32).optional(),
 
     /**
-     * Opens `POST /api/v1/guides/validate` — and nothing else — without a
+     * Opens `POST /api/v1/guides/validate` - and nothing else - without a
      * credential, so a reviewer can exercise the validator from a form. It is
      * a stateless computation over data the caller already has: it reads no
      * stored guide and writes none.
@@ -39,6 +39,13 @@ const environmentSchema = z
       .enum(["true", "false"])
       .default("false")
       .transform((value) => value === "true"),
+
+    /**
+     * Account handed to an external reviewer. Only `scripts/provision-evaluator`
+     * reads these; the application itself never looks them up.
+     */
+    EVALUATOR_EMAIL: z.email().optional(),
+    EVALUATOR_PASSWORD: z.string().min(12).optional(),
 
     OBSERVATION_INTERPRETER: z.enum(["heuristic", "llm"]).default("heuristic"),
     ANTHROPIC_API_KEY: z.string().min(1).optional(),
@@ -78,7 +85,7 @@ function readEnvironment(): Environment {
   const parsed = environmentSchema.safeParse(process.env);
 
   if (!parsed.success) {
-    // Only the variable names and the reasons are printed — never a value, so a
+    // Only the variable names and the reasons are printed - never a value, so a
     // misconfiguration cannot spill a credential into a log or a crash report.
     const issues = parsed.error.issues
       .map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`)

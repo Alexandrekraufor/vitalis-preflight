@@ -5,7 +5,18 @@
  * engine never learns that users exist, and nothing here knows what a finding
  * is. The two only meet in the route handlers and pages that guard access.
  */
-export const USER_ROLES = ["ADMIN", "MEMBER"] as const;
+export const USER_ROLES = ["ADMIN", "MEMBER", "EVALUATOR"] as const;
+
+/**
+ * Roles a person may be given from inside the application.
+ *
+ * `EVALUATOR` is deliberately absent: it exists for a reviewer who has to see
+ * the product end to end during an assessment, and it is created only by the
+ * provisioning script, never handed out from the team screen.
+ */
+export const ASSIGNABLE_ROLES = ["ADMIN", "MEMBER"] as const;
+
+export type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
 
 export type UserRole = (typeof USER_ROLES)[number];
 
@@ -20,6 +31,7 @@ export type InvitationStatus = (typeof INVITATION_STATUSES)[number];
 const ROLE_LABELS: Readonly<Record<UserRole, string>> = {
   ADMIN: "Administrador",
   MEMBER: "Operação",
+  EVALUATOR: "Avaliação",
 };
 
 const USER_STATUS_LABELS: Readonly<Record<UserStatus, string>> = {
@@ -47,7 +59,7 @@ export function invitationStatusLabel(status: InvitationStatus): string {
 
 /**
  * A signed-in person, as every guard hands them to the code it protects.
- * Deliberately does not carry the password hash — it has no reason to exist
+ * Deliberately does not carry the password hash - it has no reason to exist
  * outside the authentication adapter.
  */
 export interface AuthenticatedUser {

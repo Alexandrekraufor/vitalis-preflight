@@ -1,9 +1,13 @@
 import "server-only";
 
-import { and, count, desc, eq, gt, lt } from "drizzle-orm";
+import { and, count, desc, eq, gt, isNotNull, isNull, lt } from "drizzle-orm";
 
 import type {
   AccessRepository,
+  ApiCredentialMatch,
+  EvaluationCredential,
+  UpsertEvaluationCredentialInput,
+  CreateApiCredentialInput,
   CreateInvitationInput,
   CreateUserInput,
   SessionRecord,
@@ -18,10 +22,11 @@ import type {
   UserStatus,
 } from "@/domain/access/access.types";
 import { normalizeEmail } from "@/domain/access/access.types";
+import type { ApiCredential } from "@/domain/access/api-credential";
 import type { AuditEntry, AuditRecord } from "@/domain/access/audit";
 
 import type { Database } from "../client";
-import { auditEvents, invitations, sessions, users } from "../schema/access";
+import { apiCredentials, auditEvents, invitations, sessions, users } from "../schema/access";
 
 /**
  * Identity and access, backed by PostgreSQL.
@@ -243,6 +248,125 @@ export function createDrizzleAccessRepository(database: Database): AccessReposit
         .set({ status: "REVOKED", revokedAt: at })
         .where(and(eq(invitations.id, id), eq(invitations.status, "PENDING")))
         .returning({ id: invitations.id });
+
+      return updated.length === 1;
+    },
+
+    async createApiCredential(input: CreateApiCredentialInput): Promise<string> {
+      const [created] = await database
+        .insert(apiCredentials)
+        .values({
+          name: input.name,
+          surface: input.surface,
+          scopes: [...input.scopes],
+          tokenHash: input.tokenHash,
+          hint: input.hint,
+          createdBy: input.createdBy,
+        })
+        .returning({ id: apiCredentials.id });
+
+      if (created === undefined) throw new Error("Falha ao criar a credencial.");
+      return created.id;
+    },
+
+    async upsertEvaluationCredential(input: UpsertEvaluationCredentialInput): Promise<void> {
+      await database.transaction(async (transaction) => {
+        // One evaluation credential per surface: provisioning again rotates it
+        // instead of piling up keys nobody tracks.
+        await transaction
+          .delete(apiCredentials)
+          .where(
+            and(
+              eq(apiCredentials.surface, input.surface),
+              isNotNull(apiCredentials.evaluationSecret),
+            ),
+          );
+
+        await transaction.insert(apiCredentials).values({
+          name: input.name,
+          surface: input.surface,
+          scopes: [...input.scopes],
+          tokenHash: input.tokenHash,
+          hint: input.hint,
+          evaluationSecret: input.secret,
+        });
+      });
+    },
+
+    async listEvaluationCredentials(): Promise<readonly EvaluationCredential[]> {
+      const rows = await database
+        .select({
+          id: apiCredentials.id,
+          name: apiCredentials.name,
+          surface: apiCredentials.surface,
+          scopes: apiCredentials.scopes,
+          secret: apiCredentials.evaluationSecret,
+          revokedAt: apiCredentials.revokedAt,
+        })
+        .from(apiCredentials)
+        .where(isNotNull(apiCredentials.evaluationSecret))
+        .orderBy(apiCredentials.surface);
+
+      return rows.flatMap((row) =>
+        row.secret === null ? [] : [{ ...row, secret: row.secret }],
+      );
+    },
+
+    async setUserPassword(userId: string, passwordHash: string): Promise<void> {
+      await database
+        .update(users)
+        .set({ passwordHash, updatedAt: new Date() })
+        .where(eq(users.id, userId));
+    },
+
+    async listApiCredentials(): Promise<readonly ApiCredential[]> {
+      const rows = await database
+        .select({
+          id: apiCredentials.id,
+          name: apiCredentials.name,
+          surface: apiCredentials.surface,
+          scopes: apiCredentials.scopes,
+          hint: apiCredentials.hint,
+          createdAt: apiCredentials.createdAt,
+          createdByName: users.name,
+          lastUsedAt: apiCredentials.lastUsedAt,
+          revokedAt: apiCredentials.revokedAt,
+        })
+        .from(apiCredentials)
+        .leftJoin(users, eq(apiCredentials.createdBy, users.id))
+        .orderBy(desc(apiCredentials.createdAt));
+
+      return rows;
+    },
+
+    async findApiCredentialByTokenHash(tokenHash: string): Promise<ApiCredentialMatch | null> {
+      const [row] = await database
+        .select({
+          id: apiCredentials.id,
+          surface: apiCredentials.surface,
+          scopes: apiCredentials.scopes,
+          revokedAt: apiCredentials.revokedAt,
+        })
+        .from(apiCredentials)
+        .where(eq(apiCredentials.tokenHash, tokenHash))
+        .limit(1);
+
+      return row ?? null;
+    },
+
+    async touchApiCredential(id: string, at: Date): Promise<void> {
+      await database
+        .update(apiCredentials)
+        .set({ lastUsedAt: at })
+        .where(eq(apiCredentials.id, id));
+    },
+
+    async revokeApiCredential(id: string, at: Date): Promise<boolean> {
+      const updated = await database
+        .update(apiCredentials)
+        .set({ revokedAt: at })
+        .where(and(eq(apiCredentials.id, id), isNull(apiCredentials.revokedAt)))
+        .returning({ id: apiCredentials.id });
 
       return updated.length === 1;
     },
