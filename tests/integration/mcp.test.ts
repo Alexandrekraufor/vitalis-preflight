@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { importGuides } from "@/application/imports/import-guides.use-case";
 import type { AppServices } from "@/infrastructure/composition-root";
 import { parseGuideCsv } from "@/infrastructure/csv/guide-csv.parser";
+import { mcpToolCatalog } from "@/mcp/tool-catalog";
 import { consultarGuiaTool } from "@/mcp/tools/consultar-guia.tool";
 import { consultarRegraConvenioTool } from "@/mcp/tools/consultar-regra-convenio.tool";
 import { resumoOperacionalTool } from "@/mcp/tools/resumo-operacional.tool";
@@ -255,6 +256,27 @@ describe("POST /mcp", () => {
       expect(tool.outputSchema).toBeDefined();
       expect(tool.annotations.readOnlyHint).toBe(true);
     }
+  });
+
+  it("documents exactly the tools the protocol publishes", async () => {
+    await call({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "initialize",
+      params: {
+        protocolVersion: "2025-06-18",
+        capabilities: {},
+        clientInfo: { name: "test", version: "1.0.0" },
+      },
+    });
+
+    const response = await call({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} });
+    const body = await response.json();
+    const published = body.result.tools.map((tool: { name: string }) => tool.name).toSorted();
+
+    // The documentation screen renders the catalogue, so a tool added to the
+    // server and forgotten here would ship an incomplete reference.
+    expect(mcpToolCatalog(services).map((tool) => tool.name).toSorted()).toEqual(published);
   });
 
   it("returns structured content when a tool is called over the protocol", async () => {

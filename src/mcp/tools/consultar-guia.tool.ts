@@ -36,7 +36,7 @@ const outputShape = {
 };
 
 /**
- * Reads a guide already in the system, exactly as it was decided — no
+ * Reads a guide already in the system, exactly as it was decided - no
  * re-evaluation, so the answer matches what the clinic sees on screen.
  */
 export function consultarGuiaTool(

@@ -8,7 +8,7 @@ import type { AppServices } from "@/infrastructure/composition-root";
 
 import type { McpToolDefinition } from "../tool.types";
 
-/** Any column may be absent — an absent required field is a finding, not an error. */
+/** Any column may be absent - an absent required field is a finding, not an error. */
 const field = z.union([z.string(), z.number()]).nullish();
 
 const guideSchema = z.object({
@@ -128,7 +128,7 @@ export function verificarGuiaTool(
         return failure(
           typeof guia.id_guia === "string" ? guia.id_guia : null,
           `A guia não pôde ser interpretada: ${validated.error
-            .map((issue) => `${issue.field} — ${issue.message}`)
+            .map((issue) => `${issue.field} - ${issue.message}`)
             .join("; ")}`,
           services,
         );

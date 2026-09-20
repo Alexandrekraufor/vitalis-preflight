@@ -18,8 +18,8 @@ export interface McpToolConfig<
  * A tool as this project defines it: a name, a config the SDK understands, and
  * a handler that returns the structured output its own schema describes.
  *
- * Every tool here is read-only — the preflight answers questions and validates,
- * it never edits a guide on an agent's behalf — which is why `annotations` is
+ * Every tool here is read-only - the preflight answers questions and validates,
+ * it never edits a guide on an agent's behalf - which is why `annotations` is
  * narrowed to exactly that.
  */
 /** Derived through `z.object` so optional fields stay optional for callers. */

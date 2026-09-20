@@ -17,7 +17,7 @@ const SERVER_INFO = {
 const INSTRUCTIONS = `Este servidor expõe a validação preventiva de guias de convênio da Clínica Vitalis.
 
 As regras dos convênios são a única fonte da verdade e vivem neste servidor: consulte-as com consultar_regra_convenio em vez de assumir qualquer regra.
-Para saber se uma guia pode ser enviada, use verificar_guia — ela executa o mesmo motor determinístico da aplicação web.
+Para saber se uma guia pode ser enviada, use verificar_guia - ela executa o mesmo motor determinístico da aplicação web.
 Nenhuma tool altera guias. O servidor nunca inventa código de procedimento, CID ou número de autorização.`;
 
 /**

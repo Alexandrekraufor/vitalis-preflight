@@ -47,7 +47,7 @@ export function consultarRegraConvenioTool(ruleSet: RuleSet): McpToolDefinition<
     config: {
       title: "Consultar regra do convênio",
       description:
-        "Retorna as regras vigentes de um convênio para um procedimento: se é coberto, o valor de referência, os campos obrigatórios, o limite de sessões por autorização, o prazo de envio e a observação oficial da regra. Use SEMPRE que precisar saber o que um convênio exige ou cobre — nunca deduza uma regra de memória. Também informa quando o convênio ou o procedimento não existe na versão atual das regras. É uma operação somente de leitura: não altera regras nem guias.",
+        "Retorna as regras vigentes de um convênio para um procedimento: se é coberto, o valor de referência, os campos obrigatórios, o limite de sessões por autorização, o prazo de envio e a observação oficial da regra. Use SEMPRE que precisar saber o que um convênio exige ou cobre - nunca deduza uma regra de memória. Também informa quando o convênio ou o procedimento não existe na versão atual das regras. É uma operação somente de leitura: não altera regras nem guias.",
       inputSchema: inputShape,
       outputSchema: outputShape,
       annotations: { readOnlyHint: true, openWorldHint: false },
