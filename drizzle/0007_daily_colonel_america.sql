@@ -1,0 +1,1 @@
+ALTER TABLE "api_credentials" ADD COLUMN "scopes" text[] DEFAULT '{"READ"}' NOT NULL;
