@@ -29,7 +29,7 @@ export function NormalizationsList({
               <TableRow key={`${change.field}-${index}`}>
                 <TableCell className="font-medium">{change.field}</TableCell>
                 <TableCell className="numeric text-ink-muted">{change.from}</TableCell>
-                <TableCell className="numeric">{change.to ?? "—"}</TableCell>
+                <TableCell className="numeric">{change.to ?? "-"}</TableCell>
                 <TableCell className="text-ink-muted">{change.reason}</TableCell>
               </TableRow>
             ))}

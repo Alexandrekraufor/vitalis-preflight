@@ -1,57 +1,158 @@
 @import "tailwindcss";
 
 /*
- * Design tokens. The palette is fixed and light-only on purpose: this is a
- * clinical back-office screen that people read side by side with paper guides,
- * and a per-user dark theme would make the status colors unreliable.
+ * Design tokens.
+ *
+ * Every colour is declared twice - once for the light theme on `:root`, once
+ * for the dark theme on `.dark` - and nothing in the application hard-codes a
+ * hex value. A surface that only exists in one theme is how a sidebar ends up
+ * white with white text.
  */
 @theme {
-  --color-canvas: #f8fafc;
-  --color-surface: #ffffff;
-  --color-border-subtle: #e2e8f0;
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
 
-  --color-ink: #0f172a;
-  --color-ink-muted: #64748b;
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
 
-  --color-brand: #0f766e;
-  --color-brand-hover: #115e59;
-  --color-brand-soft: #f0fdfa;
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-ink: var(--sidebar-ink);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-active: var(--sidebar-active);
 
-  --color-accent: #0369a1;
-  --color-accent-soft: #f0f9ff;
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
 
-  --color-ready: #15803d;
-  --color-ready-soft: #f0fdf4;
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
 
-  --color-warn: #b45309;
-  --color-warn-soft: #fffbeb;
+  --color-ready: var(--ready);
+  --color-ready-soft: var(--ready-soft);
 
-  --color-danger: #b91c1c;
-  --color-danger-soft: #fef2f2;
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
 
-  --color-review: #1d4ed8;
-  --color-review-soft: #eff6ff;
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --color-review: var(--review);
+  --color-review-soft: var(--review-soft);
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  --radius-card: 0.625rem;
+  --radius-card: 0.75rem;
+
+  --shadow-premium: var(--shadow-premium);
+  --shadow-float: var(--shadow-float);
 }
 
 @layer base {
+  :root {
+    --canvas: #f4f7fb;
+    --surface: #ffffff;
+    --surface-raised: #ffffff;
+    --border-subtle: #e2e8f0;
+    --border-strong: #cbd5e1;
+
+    --ink: #0f172a;
+    --ink-muted: #5a6b84;
+    --ink-faint: #8a99ad;
+
+    --sidebar: #ffffff;
+    --sidebar-ink: #0f172a;
+    --sidebar-muted: #5a6b84;
+    --sidebar-hover: #eef2f8;
+    --sidebar-active: #e6f2f9;
+
+    --brand: #046b99;
+    --brand-hover: #035b83;
+    --brand-soft: #e8f4fb;
+
+    --accent: #0f766e;
+    --accent-soft: #e6f5f3;
+
+    --ready: #047857;
+    --ready-soft: #e7f6ef;
+
+    --warn: #b45309;
+    --warn-soft: #fdf3e3;
+
+    --danger: #be123c;
+    --danger-soft: #fdeaef;
+
+    --review: #4f46e5;
+    --review-soft: #ebeafd;
+
+    --shadow-premium: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.12);
+    --shadow-float: 0 12px 32px -8px rgba(15, 23, 42, 0.18), 0 2px 8px -4px rgba(15, 23, 42, 0.1);
+  }
+
+  .dark {
+    /*
+     * Dark is built from opaque steps, not from translucent white. A card at
+     * 2% white over the canvas is invisible the moment anything sits behind
+     * it, which is what made the panels disappear.
+     */
+    --canvas: #0a0c12;
+    --surface: #12151d;
+    --surface-raised: #171b25;
+    --border-subtle: #232936;
+    --border-strong: #333b4d;
+
+    --ink: #e9eef7;
+    --ink-muted: #97a3b6;
+    --ink-faint: #6b788d;
+
+    --sidebar: #0e1118;
+    --sidebar-ink: #e9eef7;
+    --sidebar-muted: #8b98ad;
+    --sidebar-hover: #171b25;
+    --sidebar-active: #10263a;
+
+    --brand: #38bdf8;
+    --brand-hover: #7dd3fc;
+    --brand-soft: #0d2537;
+
+    --accent: #2dd4bf;
+    --accent-soft: #0c2b2a;
+
+    --ready: #34d399;
+    --ready-soft: #0c2a22;
+
+    --warn: #fbbf24;
+    --warn-soft: #2e2413;
+
+    --danger: #fb7185;
+    --danger-soft: #331520;
+
+    --review: #a78bfa;
+    --review-soft: #221d3a;
+
+    --shadow-premium: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+    --shadow-float: 0 16px 40px -12px rgba(0, 0, 0, 0.7), 0 2px 8px -4px rgba(0, 0, 0, 0.5);
+  }
+
   html {
-    color-scheme: light;
+    scroll-behavior: smooth;
   }
 
   body {
-    background-color: var(--color-canvas);
-    color: var(--color-ink);
+    background-color: var(--canvas);
+    color: var(--ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--brand);
     outline-offset: 2px;
   }
 

@@ -20,7 +20,7 @@ const VARIANTS = {
  * Submit control that reports progress from the form's own pending state.
  *
  * `aria-busy` and the changed label mean the feedback is announced, not just
- * shown — and the button disables itself, so a double click cannot fire the
+ * shown - and the button disables itself, so a double click cannot fire the
  * action twice.
  */
 export function SubmitButton({

@@ -28,8 +28,8 @@ const loginSchema = z.object({
 /**
  * One message for every failure.
  *
- * Distinguishing "no such account" from "wrong password" — or from "account
- * disabled" — turns the login form into a directory of who works here.
+ * Distinguishing "no such account" from "wrong password" - or from "account
+ * disabled" - turns the login form into a directory of who works here.
  */
 const GENERIC_FAILURE = "E-mail ou senha incorretos.";
 

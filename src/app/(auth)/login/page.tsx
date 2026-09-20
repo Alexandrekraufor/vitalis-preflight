@@ -21,18 +21,19 @@ export default async function LoginPage({
   const target = typeof next === "string" && next.startsWith("/") ? next : "/";
 
   return (
-    <div className="rounded-xl border border-border-subtle bg-surface p-7 shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
-      <div className="mb-6">
-        <h1 className="text-lg font-semibold tracking-tight text-ink">Vitalis Preflight</h1>
-        <p className="mt-0.5 text-sm text-ink-muted">Validação preventiva de guias</p>
+    <div className="rounded-2xl border border-border-subtle/50 bg-surface p-8 shadow-premium sm:p-10">
+      <div className="mb-8 text-center lg:text-left">
+        <h2 className="text-2xl font-bold tracking-tight text-ink">Acesse sua conta</h2>
+        <p className="mt-2 text-sm text-ink-muted">Insira suas credenciais da clínica para continuar.</p>
       </div>
 
       <LoginForm next={target} />
 
-      <p className="mt-6 border-t border-border-subtle pt-4 text-xs leading-relaxed text-ink-muted">
-        O acesso é restrito à equipe da clínica. Recebeu um convite? Use o link que foi
-        enviado para o seu e-mail.
-      </p>
+      <div className="mt-8 rounded-lg bg-accent-soft p-4 text-center lg:text-left">
+        <p className="text-xs leading-relaxed text-accent">
+          <strong className="font-semibold">Acesso restrito.</strong> O uso deste sistema é exclusivo para a equipe autorizada. Recebeu um convite? Utilize o link que foi enviado para o seu e-mail.
+        </p>
+      </div>
     </div>
   );
 }

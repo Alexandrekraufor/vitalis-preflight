@@ -9,7 +9,7 @@ interface StatusStyle {
 }
 
 /**
- * Status is carried by an icon and a word, never by colour alone — the palette
+ * Status is carried by an icon and a word, never by colour alone - the palette
  * is a reinforcement so the screen still works for someone who cannot tell
  * amber from red, or who is printing it in black and white.
  */

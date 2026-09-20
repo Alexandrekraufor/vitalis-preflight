@@ -1,7 +1,7 @@
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 
 /**
- * The narrative explanation. Every sentence here is a stored finding message —
+ * The narrative explanation. Every sentence here is a stored finding message -
  * nothing is generated at render time, so what the screen says is exactly what
  * the engine decided, even months later.
  */

@@ -5,7 +5,7 @@ import Link from "next/link";
  * Shown when a signed-in person reaches a screen their role does not cover.
  *
  * It says what happened plainly rather than pretending the page does not
- * exist — the person is authenticated and trusted, just not for this.
+ * exist - the person is authenticated and trusted, just not for this.
  */
 export function AccessDenied({ description }: { readonly description: string }) {
   return (

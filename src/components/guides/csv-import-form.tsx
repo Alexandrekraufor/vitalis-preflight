@@ -7,7 +7,7 @@ import { z } from "zod";
 
 import { StatCard } from "@/components/ui/stat-card";
 
-/** The import endpoint's response is parsed, not asserted — it crosses the wire. */
+/** The import endpoint's response is parsed, not asserted - it crosses the wire. */
 const importSummarySchema = z.object({
   imported: z.number(),
   readyToSubmit: z.number(),
@@ -31,7 +31,7 @@ type State =
 /**
  * The upload itself is the only interactive part of the application, so it is
  * the only Client Component that touches guide data. It posts to the same REST
- * endpoint a script would use — there is no private path for the browser.
+ * endpoint a script would use - there is no private path for the browser.
  */
 export function CsvImportForm() {
   const router = useRouter();

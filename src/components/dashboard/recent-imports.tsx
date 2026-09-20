@@ -9,6 +9,7 @@ const SOURCE_LABELS: Readonly<Record<ImportRecord["source"], string>> = {
   CSV: "Upload CSV",
   API: "REST API",
   SEED: "Carga inicial",
+  REVALIDATION: "Reavaliação pelas regras vigentes",
 };
 
 function formatDateTime(value: Date): string {
@@ -34,7 +35,7 @@ export function RecentImports({ imports }: { readonly imports: readonly ImportRe
             {imports.map((record) => (
               <TableRow key={record.id}>
                 <TableCell>{SOURCE_LABELS[record.source]}</TableCell>
-                <TableCell className="text-ink-muted">{record.fileName ?? "—"}</TableCell>
+                <TableCell className="text-ink-muted">{record.fileName ?? "-"}</TableCell>
                 <TableCell className="numeric">{record.rowsRead}</TableCell>
                 <TableCell className="numeric">{record.rowsImported}</TableCell>
                 <TableCell className="numeric">{record.rowsRejected}</TableCell>

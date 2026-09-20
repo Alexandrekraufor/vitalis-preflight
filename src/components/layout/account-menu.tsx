@@ -21,7 +21,7 @@ function initials(name: string): string {
  */
 export function AccountMenu({ user }: { readonly user: AuthenticatedUser }) {
   return (
-    <div className="rounded-lg bg-white/5 p-2.5">
+    <div className="rounded-lg bg-black/5 dark:bg-white/5 p-2.5">
       <div className="flex items-center gap-2.5">
         <span
           aria-hidden
@@ -30,19 +30,19 @@ export function AccountMenu({ user }: { readonly user: AuthenticatedUser }) {
           {initials(user.name)}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-white">{user.name}</p>
-          <p className="truncate text-xs text-slate-400">{user.email}</p>
+          <p className="truncate text-sm font-medium text-ink">{user.name}</p>
+          <p className="truncate text-xs text-ink-muted">{user.email}</p>
         </div>
       </div>
 
       <div className="mt-2 flex items-center justify-between gap-2">
-        <span className="rounded border border-white/10 px-1.5 py-0.5 text-[0.6875rem] font-medium text-slate-300">
+        <span className="rounded border border-border-subtle px-1.5 py-0.5 text-[0.6875rem] font-medium text-ink-muted">
           {userRoleLabel(user.role)}
         </span>
         <form action={logoutAction}>
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 rounded px-1.5 py-1 text-xs text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+            className="inline-flex items-center gap-1.5 rounded px-1.5 py-1 text-xs text-ink-muted transition-colors hover:bg-black/10 dark:hover:bg-white/10 hover:text-ink"
           >
             <LogOut aria-hidden className="size-3.5" />
             Sair

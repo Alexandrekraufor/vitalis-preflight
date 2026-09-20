@@ -21,7 +21,7 @@ import {
   invitationStatusLabel,
   userRoleLabel,
   userStatusLabel,
-  USER_ROLES,
+  ASSIGNABLE_ROLES,
   type Invitation,
   type TeamMember,
 } from "@/domain/access/access.types";
@@ -31,7 +31,7 @@ const INPUT_CLASS =
 
 function formatDate(value: Date | null): string {
   return value === null
-    ? "—"
+    ? "-"
     : new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(
         value,
       );
@@ -84,7 +84,7 @@ export function TeamManagement({
             <div className="w-48">
               <Field label="Nível de acesso" htmlFor="invite-role">
                 <select id="invite-role" name="role" defaultValue="MEMBER" className={INPUT_CLASS}>
-                  {USER_ROLES.map((role) => (
+                  {ASSIGNABLE_ROLES.map((role) => (
                     <option key={role} value={role}>
                       {userRoleLabel(role)}
                     </option>
@@ -136,7 +136,7 @@ export function TeamManagement({
                 </TableCell>
                 <TableCell>
                   {member.id === currentUserId ? (
-                    <span className="text-xs text-ink-muted">—</span>
+                    <span className="text-xs text-ink-muted">-</span>
                   ) : (
                     <MemberActions member={member} />
                   )}

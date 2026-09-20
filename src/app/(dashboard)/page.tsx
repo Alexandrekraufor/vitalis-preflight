@@ -1,17 +1,19 @@
-import { AlertTriangle, CheckCircle2, FileCheck2, HelpCircle, ShieldAlert } from "lucide-react";
+import { Upload } from "lucide-react";
 import Link from "next/link";
 
 import { getOperationalSummary } from "@/application/reports/get-operational-summary.use-case";
+import { ConventionRanking } from "@/components/dashboard/convention-ranking";
+import { PortfolioVerdict } from "@/components/dashboard/portfolio-verdict";
 import { ProblemDistribution } from "@/components/dashboard/problem-distribution";
 import { RecentImports } from "@/components/dashboard/recent-imports";
 import { UnitBreakdown } from "@/components/dashboard/unit-breakdown";
 import { GuidesTable } from "@/components/guides/guides-table";
+import { PageContent } from "@/components/layout/page-content";
+import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardHeader } from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
-import { StatCard } from "@/components/ui/stat-card";
 import { requireUser } from "@/infrastructure/auth/guards";
+import { formatBrazilianDate } from "@/lib/dates";
 import { appServices } from "@/infrastructure/composition-root";
-import { formatBrl } from "@/lib/money";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +24,18 @@ export default async function OverviewPage() {
   const services = await appServices();
   await requireUser(services.access, "/");
 
-  const { summary, actionQueue, recentImports } = await getOperationalSummary({}, services);
+  const { summary, coverage, actionQueue, recentImports } = await getOperationalSummary(
+    {},
+    services,
+  );
+
+  // The dashboard counts everything on record; the executive report cuts one
+  // week out of it. Both screens now say which set they are showing, in the
+  // same words, so the two totals stop looking like a contradiction.
+  const scope =
+    coverage === null
+      ? "Todas as guias importadas"
+      : `Todas as guias importadas · atendimentos de ${formatBrazilianDate(coverage.from)} a ${formatBrazilianDate(coverage.through)}`;
 
   return (
     <>
@@ -32,76 +45,50 @@ export default async function OverviewPage() {
         action={
           <Link
             href="/importar"
-            className="rounded-md bg-brand px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
           >
+            <Upload aria-hidden className="size-4" />
             Importar guias
           </Link>
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <StatCard
-          label="Guias verificadas"
-          value={String(summary.total)}
-          icon={FileCheck2}
-          hint={`Regras ${summary.total === 0 ? "não aplicadas" : "aplicadas a todas"}`}
+      <PageContent>
+        <PortfolioVerdict
+          summary={summary}
+          scope={scope}
+          footnote="Este é o acumulado de tudo que já foi importado. O relatório executivo mostra uma semana por vez, então os números de lá são sempre menores."
         />
-        <StatCard
-          label="Prontas para envio"
-          value={String(summary.readyToSubmit)}
-          tone="ready"
-          icon={CheckCircle2}
-          hint={`${formatBrl(summary.amountProtected)} liberados`}
-        />
-        <StatCard
-          label="Precisam corrigir"
-          value={String(summary.needsCorrection)}
-          tone="danger"
-          icon={AlertTriangle}
-          hint="Problema objetivo antes do envio"
-        />
-        <StatCard
-          label="Revisão humana"
-          value={String(summary.reviewRequired)}
-          tone="review"
-          icon={HelpCircle}
-          hint="Dados contraditórios ou ambíguos"
-        />
-        <StatCard
-          label="Valor em risco"
-          value={formatBrl(summary.amountAtRisk)}
-          tone="warn"
-          icon={ShieldAlert}
-          hint="Soma das guias que não podem sair"
-        />
-      </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <ProblemDistribution problems={summary.topProblems} />
-        <UnitBreakdown units={summary.byUnit} />
-      </div>
+        <Card>
+          <CardHeader
+            title="Comece por aqui"
+            description="As guias travadas mais caras, da maior perda para a menor."
+            action={
+              <Link
+                href="/guias?status=NEEDS_CORRECTION"
+                className="text-sm font-medium text-brand underline-offset-2 hover:underline"
+              >
+                Ver todas
+              </Link>
+            }
+          />
+          <GuidesTable
+            guides={actionQueue}
+            emptyTitle="Nada pendente"
+            emptyDescription="Nenhuma guia verificada está travada neste momento."
+          />
+        </Card>
 
-      <Card>
-        <CardHeader
-          title="Guias que precisam de ação"
-          description="Ordenadas pelo valor em risco — o que trabalhar primeiro."
-          action={
-            <Link
-              href="/guias?status=NEEDS_CORRECTION"
-              className="text-sm font-medium text-accent underline-offset-2 hover:underline"
-            >
-              Ver todas
-            </Link>
-          }
-        />
-        <GuidesTable
-          guides={actionQueue}
-          emptyTitle="Nada pendente"
-          emptyDescription="Nenhuma guia verificada está travada neste momento."
-        />
-      </Card>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <ProblemDistribution problems={summary.topProblems} />
+          <UnitBreakdown units={summary.byUnit} />
+        </div>
 
-      <RecentImports imports={recentImports} />
+        <ConventionRanking conventions={summary.byConvention} totalGuides={summary.total} />
+
+        <RecentImports imports={recentImports} />
+      </PageContent>
     </>
   );
 }

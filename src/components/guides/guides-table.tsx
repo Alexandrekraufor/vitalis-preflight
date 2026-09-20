@@ -36,16 +36,19 @@ export function GuidesTable({ guides, emptyTitle, emptyDescription }: GuidesTabl
       <tbody>
         {guides.map((guide) => (
           <TableRow key={guide.idGuia}>
-            <TableCell>
+            {/* The identifier is read as one token, so it never wraps: the
+                sentence in "Problema principal" is what gives if space runs
+                short. */}
+            <TableCell className="whitespace-nowrap">
               <Link
                 href={`/guias/${guide.idGuia}`}
-                className="font-medium text-accent underline-offset-2 hover:underline"
+                className="numeric font-mono text-[0.8125rem] font-medium text-brand underline-offset-2 hover:underline"
               >
                 {guide.idGuia}
               </Link>
             </TableCell>
-            <TableCell className="text-ink-muted">{guide.unit}</TableCell>
-            <TableCell className="text-ink-muted">{guide.conventionName}</TableCell>
+            <TableCell className="whitespace-nowrap text-ink-muted">{guide.unit}</TableCell>
+            <TableCell className="whitespace-nowrap text-ink-muted">{guide.conventionName}</TableCell>
             <TableCell className="text-ink-muted">{guide.patient}</TableCell>
             <TableCell>
               <span className="numeric text-ink-muted">{guide.procedureCode}</span>
@@ -53,16 +56,16 @@ export function GuidesTable({ guides, emptyTitle, emptyDescription }: GuidesTabl
                 {guide.procedureDescription ?? "sem descrição"}
               </span>
             </TableCell>
-            <TableCell className="numeric">
-              {guide.amount === null ? "—" : formatBrl(guide.amount)}
+            <TableCell className="numeric whitespace-nowrap">
+              {guide.amount === null ? "-" : formatBrl(guide.amount)}
             </TableCell>
             <TableCell>
               <StatusBadge status={guide.status} />
             </TableCell>
-            <TableCell className="max-w-xs text-ink-muted">
-              {guide.primaryFindingMessage ?? "—"}
+            <TableCell className="min-w-[14rem] max-w-sm whitespace-normal text-ink-muted">
+              {guide.primaryFindingMessage ?? "-"}
             </TableCell>
-            <TableCell className="numeric text-ink-muted">
+            <TableCell className="numeric whitespace-nowrap text-ink-muted">
               {formatBrazilianDate(guide.appointmentDate)}
             </TableCell>
           </TableRow>

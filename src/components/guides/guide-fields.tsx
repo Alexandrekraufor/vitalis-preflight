@@ -3,7 +3,8 @@ import { toGuideRecord } from "@/domain/guides/guide";
 import type { NormalizedGuide } from "@/domain/guides/guide.types";
 import { GUIDE_COLUMNS, type GuideColumn } from "@/domain/normalization/normalization.types";
 
-const FIELD_LABELS: Readonly<Record<GuideColumn, string>> = {
+/** Operator-facing name of each CSV column, shared with the API documentation. */
+export const GUIDE_FIELD_LABELS: Readonly<Record<GuideColumn, string>> = {
   id_guia: "Identificador",
   unidade: "Unidade",
   data_atendimento: "Data do atendimento",
@@ -24,7 +25,7 @@ const FIELD_LABELS: Readonly<Record<GuideColumn, string>> = {
   data_lancamento: "Lançada no sistema em",
 };
 
-/** The guide as stored, after normalization — the data the rules were run on. */
+/** The guide as stored, after normalization - the data the rules were run on. */
 export function GuideFields({ guide }: { readonly guide: NormalizedGuide }) {
   const record = toGuideRecord(guide);
 
@@ -34,7 +35,7 @@ export function GuideFields({ guide }: { readonly guide: NormalizedGuide }) {
       <dl className="grid grid-cols-1 gap-x-8 gap-y-3 px-5 py-4 sm:grid-cols-2">
         {GUIDE_COLUMNS.map((column) => (
           <div key={column} className="flex flex-col gap-0.5">
-            <dt className="text-xs text-ink-muted">{FIELD_LABELS[column]}</dt>
+            <dt className="text-xs text-ink-muted">{GUIDE_FIELD_LABELS[column]}</dt>
             <dd className="text-sm text-ink">
               {record[column] ?? <span className="text-ink-muted">não informado</span>}
             </dd>
