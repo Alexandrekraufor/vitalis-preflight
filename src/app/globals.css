@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. The palette is fixed and light-only on purpose: this is a
+ * clinical back-office screen that people read side by side with paper guides,
+ * and a per-user dark theme would make the status colors unreliable.
+ */
+@theme {
+  --color-canvas: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border-subtle: #e2e8f0;
+
+  --color-ink: #0f172a;
+  --color-ink-muted: #64748b;
+
+  --color-brand: #0f766e;
+  --color-brand-hover: #115e59;
+  --color-brand-soft: #f0fdfa;
+
+  --color-accent: #0369a1;
+  --color-accent-soft: #f0f9ff;
+
+  --color-ready: #15803d;
+  --color-ready-soft: #f0fdf4;
+
+  --color-warn: #b45309;
+  --color-warn-soft: #fffbeb;
+
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fef2f2;
+
+  --color-review: #1d4ed8;
+  --color-review-soft: #eff6ff;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-card: 0.625rem;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Tabular figures keep money and counts aligned down a column. */
+  .numeric {
+    font-variant-numeric: tabular-nums;
+  }
+}
